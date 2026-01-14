@@ -1,0 +1,11 @@
+release/fftprocessor.o
+release/filterprocessor.o
+release/main.o
+release/mainwindow.o
+release/noiseprocessor.o
+release/plotmanager.o
+release/qcustomplot.o
+release/signalgenerator.o
+release/utils.o
+release/moc_mainwindow.o
+release/moc_qcustomplot.o

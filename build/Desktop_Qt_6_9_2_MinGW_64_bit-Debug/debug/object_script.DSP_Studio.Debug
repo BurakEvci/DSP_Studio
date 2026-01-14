@@ -1,0 +1,11 @@
+debug/fftprocessor.o
+debug/filterprocessor.o
+debug/main.o
+debug/mainwindow.o
+debug/noiseprocessor.o
+debug/plotmanager.o
+debug/qcustomplot.o
+debug/signalgenerator.o
+debug/utils.o
+debug/moc_mainwindow.o
+debug/moc_qcustomplot.o
