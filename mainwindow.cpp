@@ -17,6 +17,10 @@ MainWindow::MainWindow(QWidget *parent)
     // ComboBox doldurma WindowType
     ui->cmbWindowType->addItems({"Rectangular", "Hann", "Hamming", "Blackman"});
 
+    // ComboBox doldurma WindowType
+    ui->cmbFFTScale->addItems({"Lineer", "dB (Logaritmik)"});
+
+
     // --- MODÜLER BAĞLANTI ---
     // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeOriginal"i teslim ediyoruz.
     m_origTimePlot = new PlotManager(ui->customPlotTimeOriginal);
@@ -57,7 +61,20 @@ void MainWindow::updateFrequencyGraph()
     // FFT Hesapla
     FFTProcessor::computeFFT(signalToProcess, fs, freqVec, magVec, wType);
 
+    // YENİ: Ölçekleme Kontrolü
+    // ComboBox'ta 0: Lineer, 1: dB
+    bool isDB = (ui->cmbFFTScale->currentIndex() == 1);
+    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
+
+
+
     // Grafiği Güncelle
+    // Eğer dB seçiliyse Y ekseni etiketini güncelleyeceğiz
+    if (isDB)
+        m_origFreqPlot->setupPlot("Frekans Spektrumu", "Frekans (Hz)", "Genlik (dB)");
+    else
+        m_origFreqPlot->setupPlot("Frekans Spektrumu", "Frekans (Hz)", "Genlik");
+
     m_origFreqPlot->updatePlot(freqVec, magVec);
 }
 
@@ -130,3 +147,9 @@ void MainWindow::on_btnClear_clicked()
 
 
 //Kullanıcı arayüzü, signal-slot yönetimi, buton event’leri
+
+void MainWindow::on_cmbFFTScale_currentIndexChanged(int index)
+{
+    updateFrequencyGraph();
+}
+

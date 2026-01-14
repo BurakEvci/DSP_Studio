@@ -29,11 +29,20 @@ public:
                            QVector<double> &freqAxis, QVector<double> &magnitude,
                            WindowType window = WindowType::RECTANGULAR);
 
+    // IFFT (Ters Dönüşüm)
+    static void computeIFFT(const QVector<double> &freqReal, const QVector<double> &freqImag,
+                            QVector<double> &timeSignal);
+
+    // YENİ: dB Dönüşümü Yardımcısı
+    // isDB: true ise dB'ye çevirir, false ise dokunmaz (Linear kalır)
+    static void applyMagnitudeScaling(QVector<double> &magnitude, bool isDB);
+
+
 private:
     // Yardımcı fonksiyonlar
     static void applyWindow(QVector<double> &signal, WindowType type);
     // Recursive FFT algoritması (Cooley-Tukey)
-    static void performFFT(std::vector<std::complex<double>> &data);
+    static void performFFT(std::vector<std::complex<double>> &data, bool inverse = false);
 
 };
 

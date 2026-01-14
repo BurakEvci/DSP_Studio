@@ -80,8 +80,46 @@ void FFTProcessor::applyWindow(QVector<double> &signal, WindowType type)
     }
 }
 
+// 1. dB SCALE FONKSİYONU
+void FFTProcessor::applyMagnitudeScaling(QVector<double> &magnitude, bool isDB)
+{
+    if (!isDB) return; // Linear isteniyorsa işlem yapma
+
+    for (int i = 0; i < magnitude.size(); ++i) {
+        // Logaritma 0 hatası olmasın diye çok küçük bir sayı ekleriz (epsilon)
+        double val = magnitude[i];
+        if (val < 1e-10) val = 1e-10;
+
+        // dB Formülü: 20 * log10(Genlik)
+        magnitude[i] = 20.0 * std::log10(val);
+    }
+}
+
+// 2. IFFT FONKSİYONU
+void FFTProcessor::computeIFFT(const QVector<double> &freqReal, const QVector<double> &freqImag,
+                               QVector<double> &timeSignal)
+{
+    int N = freqReal.size();
+    std::vector<std::complex<double>> complexData(N);
+
+    for(int i=0; i<N; ++i) {
+        complexData[i] = std::complex<double>(freqReal[i], freqImag[i]);
+    }
+
+    // Ters FFT İşlemi (inverse = true)
+    performFFT(complexData, true);
+
+    timeSignal.resize(N);
+    for(int i=0; i<N; ++i) {
+        // IFFT sonucunun sadece Real kısmı alınır (Sanal kısım ihmal edilir veya 0'dır)
+        // Ayrıca N'e bölmek gerekir (Normalizasyon)
+        timeSignal[i] = complexData[i].real() / N;
+    }
+}
+
+
 // Basit Recursive Cooley-Tukey FFT Algoritması
-void FFTProcessor::performFFT(std::vector<std::complex<double>> &data)
+void FFTProcessor::performFFT(std::vector<std::complex<double>> &data, bool inverse)
 {
     const size_t N = data.size();
     if (N <= 1) return;
@@ -96,13 +134,24 @@ void FFTProcessor::performFFT(std::vector<std::complex<double>> &data)
     }
 
     // Recursive çağrı
-    performFFT(even);
-    performFFT(odd);
+    performFFT(even, inverse);
+    performFFT(odd, inverse);
+
+    // Birleştir (Combine)
+    // IFFT ise açı pozitif, FFT ise negatif olur
+    double angle = (inverse ? 2.0 : -2.0) * M_PI / N; // Ters işlemde açı pozitif olur
+
+    std::complex<double> w(1.0, 0.0);
+    std::complex<double> wn = std::polar(1.0, angle);
+
 
     // Birleştir (Butterfly Operation)
     for (size_t k = 0; k < N / 2; ++k) {
-        std::complex<double> t = std::polar(1.0, -2.0 * M_PI * k / N) * odd[k];
+        std::complex<double> t = w * odd[k];
         data[k] = even[k] + t;
         data[k + N / 2] = even[k] - t;
+
+        // Bir sonraki k için açıyı güncelle (Iterative update)
+        w *= wn;
     }
 }

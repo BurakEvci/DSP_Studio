@@ -26,6 +26,8 @@ private slots:
     void on_btnAddNoise_clicked();
     void on_btnClear_clicked();
 
+    void on_cmbFFTScale_currentIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
 
