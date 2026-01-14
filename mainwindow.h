@@ -37,6 +37,8 @@ private slots:
 
     void on_btnLowPass_clicked();
 
+    void on_btnSave_clicked();
+
 private:
     Ui::MainWindow *ui;
 

@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "filterprocessor.h"
 #include <QMessageBox>
+#include <QFileDialog>
+#include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -254,5 +256,39 @@ void MainWindow::on_btnMedian_clicked(){
 
 void MainWindow::on_btnLowPass_clicked(){
     applyAndPlotFilter(FilterType::LOW_PASS);
+}
+
+
+void MainWindow::on_btnSave_clicked()
+{
+    // 1. Kaydedilecek veriyi seç
+    // Öncelik: Filtrelenmiş > Gürültülü > Orijinal
+    QVector<double> dataToSave;
+    if (!filteredSignal.isEmpty()) {
+        dataToSave = filteredSignal;
+    } else if (!noisySignal.isEmpty()) {
+        dataToSave = noisySignal;
+    } else if (!rawSignal.isEmpty()) {
+        dataToSave = rawSignal;
+    } else {
+        QMessageBox::warning(this, "Hata", "Kaydedilecek sinyal yok!");
+        return;
+    }
+
+    // 2. Kullanıcıya nereye kaydedeceğini sor
+    QString fileName = QFileDialog::getSaveFileName(this, "Sesi Kaydet", "", "WAV Dosyası (*.wav)");
+    if (fileName.isEmpty()) return; // İptal ettiyse çık
+
+    // 3. Örnekleme hızını al
+    // Eğer kutu boşsa varsayılan 44100 olsun
+    int fs = ui->txtSampleRate->text().toInt();
+    if(fs <= 0) fs = 44100;
+
+    // 4. Kaydet
+    if (Utils::saveToWav(dataToSave, fs, fileName)) {
+        ui->statusbar->showMessage("Dosya başarıyla kaydedildi: " + fileName, 5000);
+    } else {
+        QMessageBox::critical(this, "Hata", "Dosya kaydedilemedi!");
+    }
 }
 
