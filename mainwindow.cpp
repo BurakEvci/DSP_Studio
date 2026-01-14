@@ -11,15 +11,22 @@ MainWindow::MainWindow(QWidget *parent)
     // ComboBox doldurma SignalType
     ui->cmbSignalType->addItems({"Sinüs", "Kare", "Üçgen", "Testere Dişi"});
 
-    // --- MODÜLER BAĞLANTI ---
-    // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeOrig"i teslim ediyoruz.
-    m_origTimePlot = new PlotManager(ui->customPlotTimeOriginal);
-
-    // Ayarlarını yapıyoruz
-    m_origTimePlot->setupPlot("Orijinal Sinyal", "Zaman (s)", "Genlik");
-
     // ComboBox doldurma NoiseType
     ui->cmbNoiseType->addItems({"White Noise", "Impulse Noise", "Sinusoidal Noise"});
+
+    // ComboBox doldurma WindowType
+    ui->cmbWindowType->addItems({"Rectangular", "Hann", "Hamming", "Blackman"});
+
+    // --- MODÜLER BAĞLANTI ---
+    // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeOriginal"i teslim ediyoruz.
+    m_origTimePlot = new PlotManager(ui->customPlotTimeOriginal);
+    m_origTimePlot->setupPlot("Orijinal Sinyal", "Zaman (s)", "Genlik");
+
+
+    // PlotManager'ı oluşturup, ona UI'daki "customPlotFreqOriginal"i teslim ediyoruz.
+    m_origFreqPlot = new PlotManager(ui->customPlotFreqOriginal);
+    m_origFreqPlot->setupPlot("Frekans Spektrumu", "Frekans (Hz)", "Genlik");
+
 
 }
 
@@ -28,6 +35,32 @@ MainWindow::~MainWindow()
     delete m_origTimePlot;
     delete ui;
 }
+
+
+void MainWindow::updateFrequencyGraph()
+{
+    // Hangi sinyali çizeceğiz? Gürültülü varsa onu, yoksa ham sinyali.
+    QVector<double> signalToProcess;
+    if (!noisySignal.isEmpty()) {
+        signalToProcess = noisySignal;
+    } else if (!rawSignal.isEmpty()) {
+        signalToProcess = rawSignal;
+    } else {
+        return; // Veri yok
+    }
+
+    double fs = ui->txtSampleRate->text().toDouble();
+
+    // Pencere tipini UI'dan al
+    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+
+    // FFT Hesapla
+    FFTProcessor::computeFFT(signalToProcess, fs, freqVec, magVec, wType);
+
+    // Grafiği Güncelle
+    m_origFreqPlot->updatePlot(freqVec, magVec);
+}
+
 
 void MainWindow::on_btnAddSignal_clicked()
 {
@@ -45,6 +78,8 @@ void MainWindow::on_btnAddSignal_clicked()
 
     // 3. GRAFİĞİ ÇİZDİR (Artık tek satır!)
     m_origTimePlot->updatePlot(timeVec, rawSignal);
+
+    updateFrequencyGraph();
 }
 
 
@@ -66,6 +101,8 @@ void MainWindow::on_btnAddNoise_clicked()
     // 4. Grafiği Güncelle
     // Burada kullanıcı kirli sinyali görsün diye TimePlot'u güncelliyoruz
     m_origTimePlot->updatePlot(timeVec, noisySignal);
+
+    updateFrequencyGraph();
 }
 
 void MainWindow::on_btnClear_clicked()
@@ -87,6 +124,8 @@ void MainWindow::on_btnClear_clicked()
 
     // 3. Kullanıcıya bilgi ver (Opsiyonel, Status Bar varsa)
     ui->statusbar->showMessage("Tüm veriler temizlendi.", 3000);
+
+    if(m_origFreqPlot) m_origFreqPlot->clearPlot();
 }
 
 

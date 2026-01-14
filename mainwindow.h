@@ -5,6 +5,7 @@
 #include "plotmanager.h"
 #include "signalgenerator.h"
 #include "noiseprocessor.h"
+#include "fftprocessor.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -35,10 +36,17 @@ private:
 
     // YÖNETİCİLER: Her grafik için bir manager
     PlotManager *m_origTimePlot;  // Orijinal Sinyal (Zaman) Yöneticisi
-    // İleride diğerlerini de ekleyeceğiz:
-    // PlotManager *m_origFreqPlot;
+
+
+    PlotManager *m_origFreqPlot;  // Frekans Grafiği Yöneticisi
+    // Frekans Verileri
+    QVector<double> freqVec; // X ekseni (Hz)
+    QVector<double> magVec;  // Y ekseni (Genlik)
+
     // PlotManager *m_filteredTimePlot;
 
+    // Yardımcı fonksiyon: Hem sinyal ekleyince hem gürültü ekleyince çağıracağız
+    void updateFrequencyGraph();
 
 
 };
