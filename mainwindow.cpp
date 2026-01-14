@@ -202,12 +202,15 @@ void MainWindow::on_btnClear_clicked()
     timeVec.clear();
     rawSignal.clear();
     noisySignal.clear();
+    filteredSignal.clear();
 
     // 2. Grafikleri Temizle
     // PlotManager sınıfımızda 'clearPlot' yazmıştık, şimdi işe yarayacak!
-    if(m_origTimePlot) {
-        m_origTimePlot->clearPlot();
-    }
+
+    if(m_origTimePlot) m_origTimePlot->clearPlot();
+    if(m_origFreqPlot) m_origFreqPlot->clearPlot();
+    if(m_filteredTimePlot) m_filteredTimePlot->clearPlot();
+    if(m_filteredFreqPlot) m_filteredFreqPlot->clearPlot();
 
     // İleride eklenecek diğer grafikleri de buraya ekleyeceğiz
     // if(m_origFreqPlot) m_origFreqPlot->clearPlot();

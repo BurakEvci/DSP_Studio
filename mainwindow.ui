@@ -131,7 +131,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Sinyal Üreteci Ayarları</string>
         </property>
         <widget class="QLabel" name="lblSampleRate">
          <property name="geometry">
@@ -293,7 +293,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Analiz Ayarları</string>
         </property>
         <widget class="QLabel" name="lblFFTScale">
          <property name="geometry">
@@ -347,7 +347,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Filtre Parametreleri</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
@@ -401,7 +401,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>FFT Pencere Seçimi</string>
         </property>
         <widget class="QLabel" name="lblWindowType">
          <property name="geometry">
@@ -474,7 +474,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Filtre Kontrol Paneli</string>
         </property>
         <widget class="QPushButton" name="btnLowPass">
          <property name="geometry">
@@ -622,7 +622,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Zaman Domeni (Giriş)</string>
         </property>
         <widget class="QCustomPlot" name="customPlotTimeOriginal" native="true">
          <property name="geometry">
@@ -668,7 +668,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Zaman Domeni (Çıkış/Filtreli)</string>
         </property>
         <widget class="QCustomPlot" name="customPlotTimeFiltered" native="true">
          <property name="geometry">
@@ -703,7 +703,7 @@ border-radius: 4px;
      <item>
       <widget class="QGroupBox" name="groupBox_14">
        <property name="title">
-        <string>GroupBox</string>
+        <string>Gürültü Ayarları</string>
        </property>
        <widget class="QPushButton" name="btnAddNoise">
         <property name="geometry">
@@ -840,7 +840,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Canlı Sinyal İstatistikleri</string>
         </property>
         <widget class="QLabel" name="lblSampleRateValue">
          <property name="geometry">
@@ -967,7 +967,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Frekans Spektrumu (Giriş)</string>
         </property>
         <widget class="QCustomPlot" name="customPlotFreqOriginal" native="true">
          <property name="geometry">
@@ -1013,7 +1013,7 @@ QGroupBox::title {
 </string>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>Frekans Spektrumu (Çıkış)</string>
         </property>
         <widget class="QCustomPlot" name="customPlotFreqFiltered" native="true">
          <property name="geometry">
