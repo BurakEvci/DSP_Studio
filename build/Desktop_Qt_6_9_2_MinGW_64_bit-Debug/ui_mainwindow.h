@@ -20,6 +20,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
@@ -51,7 +52,10 @@ public:
     QLabel *lblFFTScale;
     QComboBox *cmbFFTScale;
     QGroupBox *groupBox_4;
+    QVBoxLayout *verticalLayout_4;
     QLabel *lblCutoffBwSlider;
+    QLabel *lblSliderValue;
+    QSlider *sliderFilterParam;
     QGroupBox *groupBox_5;
     QLabel *lblWindowType;
     QComboBox *cmbWindowType;
@@ -252,7 +256,7 @@ public:
         cmbFFTScale->setGeometry(QRect(170, 20, 131, 26));
         groupBox_4 = new QGroupBox(groupBox);
         groupBox_4->setObjectName("groupBox_4");
-        groupBox_4->setGeometry(QRect(10, 320, 311, 121));
+        groupBox_4->setGeometry(QRect(10, 320, 311, 108));
         groupBox_4->setStyleSheet(QString::fromUtf8("QGroupBox {\n"
 "    border: 2px solid gray;\n"
 "    border-radius: 5px;\n"
@@ -269,9 +273,24 @@ public:
 "\n"
 "}\n"
 ""));
+        verticalLayout_4 = new QVBoxLayout(groupBox_4);
+        verticalLayout_4->setObjectName("verticalLayout_4");
         lblCutoffBwSlider = new QLabel(groupBox_4);
         lblCutoffBwSlider->setObjectName("lblCutoffBwSlider");
-        lblCutoffBwSlider->setGeometry(QRect(10, 20, 181, 20));
+
+        verticalLayout_4->addWidget(lblCutoffBwSlider);
+
+        lblSliderValue = new QLabel(groupBox_4);
+        lblSliderValue->setObjectName("lblSliderValue");
+
+        verticalLayout_4->addWidget(lblSliderValue);
+
+        sliderFilterParam = new QSlider(groupBox_4);
+        sliderFilterParam->setObjectName("sliderFilterParam");
+        sliderFilterParam->setOrientation(Qt::Orientation::Horizontal);
+
+        verticalLayout_4->addWidget(sliderFilterParam);
+
         groupBox_5 = new QGroupBox(groupBox);
         groupBox_5->setObjectName("groupBox_5");
         groupBox_5->setGeometry(QRect(10, 440, 311, 181));
@@ -580,6 +599,7 @@ public:
         lblFFTScale->setText(QCoreApplication::translate("MainWindow", "FFT \303\226l\303\247ekleme Se\303\247imi", nullptr));
         groupBox_4->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
         lblCutoffBwSlider->setText(QCoreApplication::translate("MainWindow", "Cutoff / Bandwith Ayar Slider", nullptr));
+        lblSliderValue->setText(QCoreApplication::translate("MainWindow", "De\304\237er: 5", nullptr));
         groupBox_5->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
         lblWindowType->setText(QCoreApplication::translate("MainWindow", "FFT Penceresi Se\303\247imi", nullptr));
         groupBox_6->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));

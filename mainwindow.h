@@ -6,6 +6,7 @@
 #include "signalgenerator.h"
 #include "noiseprocessor.h"
 #include "fftprocessor.h"
+#include "filterprocessor.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,6 +28,14 @@ private slots:
     void on_btnClear_clicked();
 
     void on_cmbFFTScale_currentIndexChanged(int index);
+
+    void on_sliderFilterParam_valueChanged(int value);
+
+    void on_btnMovingAvg_clicked();
+
+    void on_btnMedian_clicked();
+
+    void on_btnLowPass_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -50,6 +59,18 @@ private:
     // Yardımcı fonksiyon: Hem sinyal ekleyince hem gürültü ekleyince çağıracağız
     void updateFrequencyGraph();
 
+
+    PlotManager *m_filteredTimePlot; // Filtreli Zaman Grafiği Yöneticisi
+    PlotManager *m_filteredFreqPlot; // Filtreli Frekans Grafiği Yöneticisi
+
+    QVector<double> filteredSignal; // Filtrelenmiş Sinyal Verisi
+
+
+    // Filtre yardımcı fonksiyonu
+    void applyAndPlotFilter(FilterType type);
+
+    // Son seçilen filtreyi hafızada tutalım ki slider oynayınca tekrar hesaplayabilelim
+    FilterType currentFilterType = FilterType::MOVING_AVERAGE; // Varsayılan
 
 };
 #endif // MAINWINDOW_H
