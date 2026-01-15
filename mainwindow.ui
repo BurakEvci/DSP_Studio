@@ -793,6 +793,19 @@ border-radius: 4px;
          <string>Temizle</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="btnLoad">
+        <property name="geometry">
+         <rect>
+          <x>850</x>
+          <y>20</y>
+          <width>90</width>
+          <height>29</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Yükle</string>
+        </property>
+       </widget>
       </widget>
      </item>
     </layout>
@@ -842,100 +855,108 @@ QGroupBox::title {
         <property name="title">
          <string>Canlı Sinyal İstatistikleri</string>
         </property>
-        <widget class="QLabel" name="lblSampleRateValue">
+        <widget class="QLabel" name="lblStatMax">
          <property name="geometry">
           <rect>
-           <x>40</x>
+           <x>170</x>
            <y>50</y>
            <width>191</width>
            <height>20</height>
           </rect>
          </property>
          <property name="text">
-          <string>Örnekleme Frekansı (Hz):</string>
+          <string/>
          </property>
         </widget>
-        <widget class="QLabel" name="lblDurationValue">
+        <widget class="QLabel" name="lblStatMin">
          <property name="geometry">
           <rect>
-           <x>40</x>
+           <x>170</x>
            <y>80</y>
            <width>221</width>
            <height>20</height>
           </rect>
          </property>
          <property name="text">
-          <string>Süre (s):</string>
+          <string/>
          </property>
         </widget>
-        <widget class="QLabel" name="lblSignalFreqValue">
+        <widget class="QLabel" name="lblStatMean">
          <property name="geometry">
           <rect>
-           <x>40</x>
+           <x>170</x>
            <y>110</y>
            <width>231</width>
            <height>20</height>
           </rect>
          </property>
          <property name="text">
-          <string>Sinyallerin Frekans Değerleri (Hz):</string>
+          <string/>
          </property>
         </widget>
-        <widget class="QLabel" name="txtSampleValue">
+        <widget class="QLabel" name="lblStatRMS">
          <property name="geometry">
           <rect>
-           <x>270</x>
+           <x>170</x>
+           <y>140</y>
+           <width>231</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="lblStatRMS_2">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>140</y>
+           <width>81</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>RMS Değeri:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="lblStatMax_2">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
            <y>50</y>
-           <width>101</width>
+           <width>81</width>
            <height>20</height>
           </rect>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QLabel {
-    border: 2px solid gray;
-    border-radius: 5px;
-}</string>
-         </property>
          <property name="text">
-          <string/>
+          <string>Maksimum:</string>
          </property>
         </widget>
-        <widget class="QLabel" name="txtDurationValue">
+        <widget class="QLabel" name="lblStatMin_2">
          <property name="geometry">
           <rect>
-           <x>270</x>
+           <x>40</x>
            <y>80</y>
-           <width>101</width>
+           <width>61</width>
            <height>20</height>
           </rect>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QLabel {
-    border: 2px solid gray;
-    border-radius: 5px;
-}</string>
-         </property>
          <property name="text">
-          <string/>
+          <string>Minimum:</string>
          </property>
         </widget>
-        <widget class="QLabel" name="txtSignalFreqValue">
+        <widget class="QLabel" name="lblStatMean_2">
          <property name="geometry">
           <rect>
-           <x>270</x>
+           <x>40</x>
            <y>110</y>
-           <width>101</width>
+           <width>91</width>
            <height>20</height>
           </rect>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QLabel {
-    border: 2px solid gray;
-    border-radius: 5px;
-}</string>
-         </property>
          <property name="text">
-          <string/>
+          <string>Ortalama (DC):</string>
          </property>
         </widget>
        </widget>

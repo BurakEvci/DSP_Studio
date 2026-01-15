@@ -39,6 +39,8 @@ private slots:
 
     void on_btnSave_clicked();
 
+    void on_btnLoad_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -73,6 +75,8 @@ private:
 
     // Son seçilen filtreyi hafızada tutalım ki slider oynayınca tekrar hesaplayabilelim
     FilterType currentFilterType = FilterType::MOVING_AVERAGE; // Varsayılan
+
+    void updateStats(const QVector<double> &signal);
 
 };
 #endif // MAINWINDOW_H

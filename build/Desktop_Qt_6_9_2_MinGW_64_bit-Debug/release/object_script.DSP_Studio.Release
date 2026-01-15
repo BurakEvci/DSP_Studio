@@ -6,6 +6,7 @@ release/noiseprocessor.o
 release/plotmanager.o
 release/qcustomplot.o
 release/signalgenerator.o
+release/statsprocessor.o
 release/utils.o
 release/moc_mainwindow.o
 release/moc_qcustomplot.o

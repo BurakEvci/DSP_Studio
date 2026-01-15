@@ -16,6 +16,7 @@ public:
      * @return Başarılıysa true döner
      */
     static bool saveToWav(const QVector<double> &data, int sampleRate, const QString &fileName);
+    static bool loadFromWav(const QString &fileName, QVector<double> &data, int &sampleRate);
 };
 
 

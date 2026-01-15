@@ -86,16 +86,19 @@ public:
     QLabel *lblNoiseAmplitude;
     QDoubleSpinBox *dsbNoiseAmplitude;
     QPushButton *btnClear;
+    QPushButton *btnLoad;
     QWidget *verticalLayoutWidget_3;
     QVBoxLayout *verticalLayout_3;
     QGroupBox *groupBox_10;
     QGroupBox *groupBox_11;
-    QLabel *lblSampleRateValue;
-    QLabel *lblDurationValue;
-    QLabel *lblSignalFreqValue;
-    QLabel *txtSampleValue;
-    QLabel *txtDurationValue;
-    QLabel *txtSignalFreqValue;
+    QLabel *lblStatMax;
+    QLabel *lblStatMin;
+    QLabel *lblStatMean;
+    QLabel *lblStatRMS;
+    QLabel *lblStatRMS_2;
+    QLabel *lblStatMax_2;
+    QLabel *lblStatMin_2;
+    QLabel *lblStatMean_2;
     QGroupBox *groupBox_12;
     QCustomPlot *customPlotFreqOriginal;
     QGroupBox *groupBox_13;
@@ -456,6 +459,9 @@ public:
         btnClear = new QPushButton(groupBox_14);
         btnClear->setObjectName("btnClear");
         btnClear->setGeometry(QRect(970, 20, 121, 29));
+        btnLoad = new QPushButton(groupBox_14);
+        btnLoad->setObjectName("btnLoad");
+        btnLoad->setGeometry(QRect(850, 20, 90, 29));
 
         horizontalLayout_2->addWidget(groupBox_14);
 
@@ -486,36 +492,30 @@ public:
 "\n"
 "}\n"
 ""));
-        lblSampleRateValue = new QLabel(groupBox_11);
-        lblSampleRateValue->setObjectName("lblSampleRateValue");
-        lblSampleRateValue->setGeometry(QRect(40, 50, 191, 20));
-        lblDurationValue = new QLabel(groupBox_11);
-        lblDurationValue->setObjectName("lblDurationValue");
-        lblDurationValue->setGeometry(QRect(40, 80, 221, 20));
-        lblSignalFreqValue = new QLabel(groupBox_11);
-        lblSignalFreqValue->setObjectName("lblSignalFreqValue");
-        lblSignalFreqValue->setGeometry(QRect(40, 110, 231, 20));
-        txtSampleValue = new QLabel(groupBox_11);
-        txtSampleValue->setObjectName("txtSampleValue");
-        txtSampleValue->setGeometry(QRect(270, 50, 101, 20));
-        txtSampleValue->setStyleSheet(QString::fromUtf8("QLabel {\n"
-"    border: 2px solid gray;\n"
-"    border-radius: 5px;\n"
-"}"));
-        txtDurationValue = new QLabel(groupBox_11);
-        txtDurationValue->setObjectName("txtDurationValue");
-        txtDurationValue->setGeometry(QRect(270, 80, 101, 20));
-        txtDurationValue->setStyleSheet(QString::fromUtf8("QLabel {\n"
-"    border: 2px solid gray;\n"
-"    border-radius: 5px;\n"
-"}"));
-        txtSignalFreqValue = new QLabel(groupBox_11);
-        txtSignalFreqValue->setObjectName("txtSignalFreqValue");
-        txtSignalFreqValue->setGeometry(QRect(270, 110, 101, 20));
-        txtSignalFreqValue->setStyleSheet(QString::fromUtf8("QLabel {\n"
-"    border: 2px solid gray;\n"
-"    border-radius: 5px;\n"
-"}"));
+        lblStatMax = new QLabel(groupBox_11);
+        lblStatMax->setObjectName("lblStatMax");
+        lblStatMax->setGeometry(QRect(170, 50, 191, 20));
+        lblStatMin = new QLabel(groupBox_11);
+        lblStatMin->setObjectName("lblStatMin");
+        lblStatMin->setGeometry(QRect(170, 80, 221, 20));
+        lblStatMean = new QLabel(groupBox_11);
+        lblStatMean->setObjectName("lblStatMean");
+        lblStatMean->setGeometry(QRect(170, 110, 231, 20));
+        lblStatRMS = new QLabel(groupBox_11);
+        lblStatRMS->setObjectName("lblStatRMS");
+        lblStatRMS->setGeometry(QRect(170, 140, 231, 20));
+        lblStatRMS_2 = new QLabel(groupBox_11);
+        lblStatRMS_2->setObjectName("lblStatRMS_2");
+        lblStatRMS_2->setGeometry(QRect(40, 140, 81, 20));
+        lblStatMax_2 = new QLabel(groupBox_11);
+        lblStatMax_2->setObjectName("lblStatMax_2");
+        lblStatMax_2->setGeometry(QRect(40, 50, 81, 20));
+        lblStatMin_2 = new QLabel(groupBox_11);
+        lblStatMin_2->setObjectName("lblStatMin_2");
+        lblStatMin_2->setGeometry(QRect(40, 80, 61, 20));
+        lblStatMean_2 = new QLabel(groupBox_11);
+        lblStatMean_2->setObjectName("lblStatMean_2");
+        lblStatMean_2->setGeometry(QRect(40, 110, 91, 20));
         groupBox_12 = new QGroupBox(groupBox_10);
         groupBox_12->setObjectName("groupBox_12");
         groupBox_12->setGeometry(QRect(10, 200, 431, 211));
@@ -588,22 +588,22 @@ public:
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
         lblTitle->setText(QCoreApplication::translate("MainWindow", "DSP Analyzer", nullptr));
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        groupBox_2->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("MainWindow", "Sinyal \303\234reteci Ayarlar\304\261", nullptr));
         lblSampleRate->setText(QCoreApplication::translate("MainWindow", "\303\226rnekleme Frekan\304\261s\304\261n\304\261 Girin (Hz):", nullptr));
         lblDuration->setText(QCoreApplication::translate("MainWindow", "S\303\274reyi Girin (s):", nullptr));
         lblSignalFreq->setText(QCoreApplication::translate("MainWindow", "Sinyalin Frekans De\304\237erini Girin(Hz):", nullptr));
         btnAddSignal->setText(QCoreApplication::translate("MainWindow", "Sinyal Ekle", nullptr));
         lblSignalType->setText(QCoreApplication::translate("MainWindow", "Sinyal T\303\274r\303\274:", nullptr));
         lblSignalType_2->setText(QCoreApplication::translate("MainWindow", "Genlik De\304\237eri:", nullptr));
-        groupBox_3->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_3->setTitle(QCoreApplication::translate("MainWindow", "Analiz Ayarlar\304\261", nullptr));
         lblFFTScale->setText(QCoreApplication::translate("MainWindow", "FFT \303\226l\303\247ekleme Se\303\247imi", nullptr));
-        groupBox_4->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_4->setTitle(QCoreApplication::translate("MainWindow", "Filtre Parametreleri", nullptr));
         lblCutoffBwSlider->setText(QCoreApplication::translate("MainWindow", "Cutoff / Bandwith Ayar Slider", nullptr));
         lblSliderValue->setText(QCoreApplication::translate("MainWindow", "De\304\237er: 5", nullptr));
-        groupBox_5->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_5->setTitle(QCoreApplication::translate("MainWindow", "FFT Pencere Se\303\247imi", nullptr));
         lblWindowType->setText(QCoreApplication::translate("MainWindow", "FFT Penceresi Se\303\247imi", nullptr));
         groupBox_6->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        groupBox_7->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_7->setTitle(QCoreApplication::translate("MainWindow", "Filtre Kontrol Paneli", nullptr));
         btnLowPass->setText(QCoreApplication::translate("MainWindow", "Low-Pass", nullptr));
         btnHighPass->setText(QCoreApplication::translate("MainWindow", "High-Pass", nullptr));
         btnBandPass->setText(QCoreApplication::translate("MainWindow", "Band-Pass", nullptr));
@@ -613,24 +613,27 @@ public:
         btnWiener->setText(QCoreApplication::translate("MainWindow", "Wiener", nullptr));
         btnKalman->setText(QCoreApplication::translate("MainWindow", "Kalman", nullptr));
         btnMedian->setText(QCoreApplication::translate("MainWindow", "Median", nullptr));
-        groupBox_8->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        groupBox_9->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        groupBox_14->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_8->setTitle(QCoreApplication::translate("MainWindow", "Zaman Domeni (Giri\305\237)", nullptr));
+        groupBox_9->setTitle(QCoreApplication::translate("MainWindow", "Zaman Domeni (\303\207\304\261k\304\261\305\237/Filtreli)", nullptr));
+        groupBox_14->setTitle(QCoreApplication::translate("MainWindow", "G\303\274r\303\274lt\303\274 Ayarlar\304\261", nullptr));
         btnAddNoise->setText(QCoreApplication::translate("MainWindow", "G\303\274r\303\274lt\303\274 Ekle", nullptr));
         btnSave->setText(QCoreApplication::translate("MainWindow", "Kaydet", nullptr));
         lblNoiseType->setText(QCoreApplication::translate("MainWindow", "G\303\274r\303\274lt\303\274 T\303\274r\303\274 Se\303\247:", nullptr));
         lblNoiseAmplitude->setText(QCoreApplication::translate("MainWindow", "G\303\274r\303\274lt\303\274 \305\236iddeti Se\303\247:", nullptr));
         btnClear->setText(QCoreApplication::translate("MainWindow", "Temizle", nullptr));
+        btnLoad->setText(QCoreApplication::translate("MainWindow", "Y\303\274kle", nullptr));
         groupBox_10->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        groupBox_11->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        lblSampleRateValue->setText(QCoreApplication::translate("MainWindow", "\303\226rnekleme Frekans\304\261 (Hz):", nullptr));
-        lblDurationValue->setText(QCoreApplication::translate("MainWindow", "S\303\274re (s):", nullptr));
-        lblSignalFreqValue->setText(QCoreApplication::translate("MainWindow", "Sinyallerin Frekans De\304\237erleri (Hz):", nullptr));
-        txtSampleValue->setText(QString());
-        txtDurationValue->setText(QString());
-        txtSignalFreqValue->setText(QString());
-        groupBox_12->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        groupBox_13->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
+        groupBox_11->setTitle(QCoreApplication::translate("MainWindow", "Canl\304\261 Sinyal \304\260statistikleri", nullptr));
+        lblStatMax->setText(QString());
+        lblStatMin->setText(QString());
+        lblStatMean->setText(QString());
+        lblStatRMS->setText(QString());
+        lblStatRMS_2->setText(QCoreApplication::translate("MainWindow", "RMS De\304\237eri:", nullptr));
+        lblStatMax_2->setText(QCoreApplication::translate("MainWindow", "Maksimum:", nullptr));
+        lblStatMin_2->setText(QCoreApplication::translate("MainWindow", "Minimum:", nullptr));
+        lblStatMean_2->setText(QCoreApplication::translate("MainWindow", "Ortalama (DC):", nullptr));
+        groupBox_12->setTitle(QCoreApplication::translate("MainWindow", "Frekans Spektrumu (Giri\305\237)", nullptr));
+        groupBox_13->setTitle(QCoreApplication::translate("MainWindow", "Frekans Spektrumu (\303\207\304\261k\304\261\305\237)", nullptr));
     } // retranslateUi
 
 };

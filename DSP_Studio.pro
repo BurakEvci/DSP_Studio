@@ -17,6 +17,7 @@ SOURCES += \
     plotmanager.cpp \
     qcustomplot.cpp \
     signalgenerator.cpp \
+    statsprocessor.cpp \
     utils.cpp
 
 HEADERS += \
@@ -27,6 +28,7 @@ HEADERS += \
     plotmanager.h \
     qcustomplot.h \
     signalgenerator.h \
+    statsprocessor.h \
     utils.h
 
 FORMS += \

@@ -6,6 +6,7 @@ debug/noiseprocessor.o
 debug/plotmanager.o
 debug/qcustomplot.o
 debug/signalgenerator.o
+debug/statsprocessor.o
 debug/utils.o
 debug/moc_mainwindow.o
 debug/moc_qcustomplot.o

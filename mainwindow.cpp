@@ -4,6 +4,10 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include "utils.h"
+#include <QInputDialog>
+#include "statsprocessor.h"
+
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -101,9 +105,15 @@ void MainWindow::updateFrequencyGraph()
 
 void MainWindow::applyAndPlotFilter(FilterType type)
 {
+    // 1. GÜVENLİK KONTROLLERİ
     // EĞER GRAFİK YÖNETİCİLERİ OLUŞMADIYSA DUR (Crash önleyici)
     if (!m_filteredTimePlot || !m_filteredFreqPlot) return;
 
+    // Eğer hiç sinyal yoksa işlem yapma
+    if (rawSignal.isEmpty()) return;
+
+    // 2. UI GÜNCELLEMELERİ
+    // Son kullanılan filtre türünü kaydet (Slider değişirse lazım olabilir)
     // Son kullanılan filtre türünü kaydet (Slider için lazım)
     currentFilterType = type;
 
@@ -115,26 +125,48 @@ void MainWindow::applyAndPlotFilter(FilterType type)
         paramName = "Pencere Boyutu";
     } else if (type == FilterType::LOW_PASS) {
         paramName = "Filtre Gücü";
+    } else if (type == FilterType::BAND_STOP) {
+        paramName = "Merkez Frekans (Hz)";
     }
+
     ui->lblSliderValue->setText(QString("%1: %2").arg(paramName).arg(param));
 
 
     // Girdi Sinyalini Belirle (Gürültülü yoksa Orijinali al)
-    QVector<double> inputSignal = noisySignal.isEmpty() ? rawSignal : noisySignal;
+    QVector<double> inputSignal;
+
+    if (!filteredSignal.isEmpty()) {
+        // Zaten filtrelenmiş veri var, üzerine devam et!
+        inputSignal = filteredSignal;
+    }
+    else if (!noisySignal.isEmpty()) {
+        // Henüz filtre yok ama gürültülü sinyal var
+        inputSignal = noisySignal;
+    }
+    else {
+        // Gürültü de yok, saf sinyali al
+        inputSignal = rawSignal;
+    }
+
     if(inputSignal.isEmpty()) return;
 
-    double fs = ui->txtSampleRate->text().toDouble();
 
-    // 1. Filtreyi Hesapla
+    // 4. FİLTREYİ HESAPLA
+    double fs = ui->txtSampleRate->text().toDouble();
+    // FilterProcessor içindeki genel applyFilter fonksiyonunu kullanıyoruz
     FilterProcessor::applyFilter(inputSignal, filteredSignal, type, fs, param);
 
-    // 2. Filtreli Zaman Grafiğini Çiz
+
+    // 5. FİLTRELİ ZAMAN GRAFİĞİNİ ÇİZ
     m_filteredTimePlot->updatePlot(timeVec, filteredSignal);
 
-    // 3. Filtreli FFT'yi Hesapla ve Çiz
+
+    // 6. FİLTRELİ FFT HESAPLA VE ÇİZ
     QVector<double> freqAxis, magVec;
+
     // WindowType'ı UI'dan al
     WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+
 
     FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
 
@@ -149,6 +181,8 @@ void MainWindow::applyAndPlotFilter(FilterType type)
         m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
 
     m_filteredFreqPlot->updatePlot(freqAxis, magVec);
+
+    updateStats(filteredSignal);
 }
 
 
@@ -171,6 +205,7 @@ void MainWindow::on_btnAddSignal_clicked()
     m_origTimePlot->updatePlot(timeVec, rawSignal);
 
     updateFrequencyGraph();
+    updateStats(rawSignal);
 }
 
 
@@ -194,6 +229,7 @@ void MainWindow::on_btnAddNoise_clicked()
     m_origTimePlot->updatePlot(timeVec, noisySignal);
 
     updateFrequencyGraph();
+    updateStats(noisySignal);
 }
 
 void MainWindow::on_btnClear_clicked()
@@ -220,6 +256,11 @@ void MainWindow::on_btnClear_clicked()
     ui->statusbar->showMessage("Tüm veriler temizlendi.", 3000);
 
     if(m_origFreqPlot) m_origFreqPlot->clearPlot();
+
+    ui->lblStatMax->setText("0.000");
+    ui->lblStatMin->setText("0.000");
+    ui->lblStatMean->setText("0.000");
+    ui->lblStatRMS->setText("0.000");
 }
 
 
@@ -294,4 +335,101 @@ void MainWindow::on_btnSave_clicked()
         QMessageBox::critical(this, "Hata", "Dosya kaydedilemedi!");
     }
 }
+
+
+void MainWindow::on_btnLoad_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Ses Dosyası Yükle", "", "WAV Dosyaları (*.wav)");
+    if (fileName.isEmpty()) return;
+
+    // Geçici değişkenler
+    QVector<double> loadedData;
+    int loadedSampleRate;
+
+    if (Utils::loadFromWav(fileName, loadedData, loadedSampleRate)) {
+
+        // --- SÜRE KISITLAMASI VE KESME ---
+        double totalDuration = static_cast<double>(loadedData.size()) / loadedSampleRate;
+        int maxSeconds = 30; // Hedef süremiz
+
+        if (totalDuration > maxSeconds) {
+            bool ok;
+            double startTime = QInputDialog::getDouble(this, "Dosya Çok Uzun",
+                                                       QString("Dosya süresi: %1 sn.\nAnaliz için %2 sn alınacak.\nBaşlangıç saniyesi:").arg(totalDuration).arg(maxSeconds),
+                                                       0, 0, totalDuration - maxSeconds, 1, &ok);
+
+            if (!ok) startTime = 0; // İptal derse baştan başla
+
+            // Kesme İşlemi
+            int startIdx = static_cast<int>(startTime * loadedSampleRate);
+            int lengthIdx = maxSeconds * loadedSampleRate;
+
+            // Vektör sınırlarını aşmamak için güvenlik kontrolü (mid fonksiyonu bunu yapsa da garantilemek iyidir)
+            if (startIdx + lengthIdx > loadedData.size()) lengthIdx = loadedData.size() - startIdx;
+
+            loadedData = loadedData.mid(startIdx, lengthIdx);
+
+            ui->statusbar->showMessage(QString("Kesilen parça yüklendi: %1.sn - %2.sn").arg(startTime).arg(startTime + maxSeconds), 5000);
+        }
+
+        // --- TEMİZLİK VE GÜNCELLEME ---
+        // 1. Önceki verileri temizle
+        on_btnClear_clicked();
+
+        // 2. Yeni verileri ana değişkenlere aktar
+        rawSignal = loadedData;
+
+        // 3. UI'ı güncelle
+        ui->txtSampleRate->setText(QString::number(loadedSampleRate));
+
+        // Süreyi hesapla ve yaz
+        double duration = static_cast<double>(loadedData.size()) / loadedSampleRate;
+        ui->txtDuration->setText(QString::number(duration, 'f', 2));
+
+        // 4. Zaman Vektörünü (X Ekseni) Yeniden Oluştur
+        // DÜZELTME: resize yaptıktan sonra 'append' değil '[]' operatörü kullanılmalı.
+        // Yoksa vektör boyutu 2 katına çıkar (ilk yarısı boş kalır).
+        timeVec.clear();
+        timeVec.resize(loadedData.size());
+        for (int i = 0; i < loadedData.size(); ++i) {
+            timeVec[i] = static_cast<double>(i) / loadedSampleRate;
+        }
+
+        // 5. Grafikleri Çiz
+        m_origTimePlot->updatePlot(timeVec, rawSignal);
+
+        // --- KRİTİK DÜZELTME: EKSENLERİ MANUEL ZORLA ---
+        // Bu kısım, o sıkışma sorununu ve mavi çizgiyi %100 çözer.
+        // ui->customPlotTimeOrig diyerek doğrudan grafik nesnesine erişiyoruz.
+        ui->customPlotTimeOriginal->xAxis->setRange(0, duration);
+        ui->customPlotTimeOriginal->yAxis->setRange(-1.1, 1.1); // Ses sinyali -1..1 arasındadır, biraz pay bıraktık.
+        ui->customPlotTimeOriginal->replot();
+        // -----------------------------------------------
+
+        // FFT ve İstatistikleri Güncelle
+        updateFrequencyGraph();
+
+        updateStats(rawSignal); // İstatistik kodunu yazdığında açabilirsin
+
+        ui->statusbar->showMessage("Dosya başarıyla yüklendi: " + fileName, 5000);
+
+    } else {
+        QMessageBox::critical(this, "Hata", "Dosya yüklenemedi! (Sadece 16-bit PCM WAV desteklenir).");
+    }
+}
+
+
+void MainWindow::updateStats(const QVector<double> &signal)
+{
+    // 1. Hesapla
+    StatsProcessor::SignalStats stats = StatsProcessor::computeStats(signal);
+
+    // 2. Ekrana Yaz (Virgülden sonra 3 hane hassasiyetle)
+    // Label isimlerinin Qt Designer'dakiyle AYNI olduğundan emin ol!
+    ui->lblStatMax->setText(QString::number(stats.maxVal, 'f', 3));
+    ui->lblStatMin->setText(QString::number(stats.minVal, 'f', 3));
+    ui->lblStatMean->setText(QString::number(stats.meanVal, 'f', 3));
+    ui->lblStatRMS->setText(QString::number(stats.rmsVal, 'f', 3));
+}
+
 

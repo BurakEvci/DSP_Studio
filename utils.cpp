@@ -59,3 +59,111 @@ bool Utils::saveToWav(const QVector<double> &data, int sampleRate, const QString
     file.close();
     return true;
 }
+
+
+bool Utils::loadFromWav(const QString &fileName, QVector<double> &data, int &sampleRate)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) return false;
+
+    QDataStream in(&file);
+    in.setByteOrder(QDataStream::LittleEndian);
+
+    // --- HEADER KONTROLLERİ ---
+    char chunkId[4];
+    in.readRawData(chunkId, 4);
+    if (strncmp(chunkId, "RIFF", 4) != 0) return false;
+
+    in.skipRawData(4); // File Size
+
+    char format[4];
+    in.readRawData(format, 4);
+    if (strncmp(format, "WAVE", 4) != 0) return false;
+
+    char subchunk1Id[4];
+    in.readRawData(subchunk1Id, 4); // "fmt "
+
+    quint32 subchunk1Size;
+    in >> subchunk1Size;
+
+    quint16 audioFormat;
+    in >> audioFormat;
+    if (audioFormat != 1) return false; // Sadece PCM destekliyoruz (Sıkıştırılmamış)
+
+    quint16 numChannels;
+    in >> numChannels;
+
+    quint32 fs;
+    in >> fs;
+    sampleRate = static_cast<int>(fs);
+
+    in.skipRawData(6); // ByteRate + BlockAlign
+
+    quint16 bitsPerSample;
+    in >> bitsPerSample;
+
+    // Sadece 16-bit destekleyelim (Şimdilik)
+    if (bitsPerSample != 16) return false;
+
+    // fmt chunk'ı beklenenden uzunsa geri kalanını atla (Bazen metadata olur)
+    if (subchunk1Size > 16) {
+        in.skipRawData(subchunk1Size - 16);
+    }
+
+    // --- DATA CHUNK ARAMA ---
+    // Bazen "LIST" veya başka chunklar araya girebilir, "data"yı bulana kadar git.
+    while (true) {
+        if (in.atEnd()) return false;
+
+        char header[4];
+        if (in.readRawData(header, 4) < 4) return false;
+
+        quint32 size;
+        in >> size;
+
+        if (strncmp(header, "data", 4) == 0) {
+            // data bulundu! size değişkeni veri boyutunu tutuyor.
+
+            // --- PERFORMANS OPTİMİZASYONU ---
+            // Kaç örnek (sample) okuyacağımızı hesaplayalım
+            // 16 bit = 2 byte.
+            int bytesPerSample = 2;
+            int totalSamples = size / (bytesPerSample * numChannels);
+
+            data.clear();
+            data.resize(totalSamples); // Vektörü TEK SEFERDE büyüt (Çok hızlandırır)
+
+            for (int i = 0; i < totalSamples; ++i) {
+                qint16 sampleL;
+                in >> sampleL;
+
+                double val = 0.0;
+
+                if (numChannels == 1) {
+                    // Mono
+                    val = static_cast<double>(sampleL) / 32768.0;
+                }
+                else if (numChannels == 2) {
+                    // Stereo: Sağ kanalı da oku ve ortalamasını al
+                    qint16 sampleR;
+                    in >> sampleR;
+                    val = (static_cast<double>(sampleL) + static_cast<double>(sampleR)) / 2.0;
+                    val /= 32768.0; // Normalize et
+                }
+
+                // Vektöre yaz (append kullanmıyoruz, [] operatörü daha hızlı)
+                data[i] = val;
+            }
+
+            break; // Döngüden çık
+        } else {
+            // data değilse atla
+            in.skipRawData(size);
+        }
+    }
+
+    file.close();
+    return !data.isEmpty();
+}
+
+
