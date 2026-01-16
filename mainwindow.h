@@ -51,6 +51,8 @@ private slots:
 
     void on_btnUndo_clicked();
 
+    void on_btnBandStop_clicked();
+
 private:
     Ui::MainWindow *ui;
 

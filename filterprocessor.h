@@ -38,6 +38,7 @@ private:
     static void applyMovingAverage(const QVector<double> &input, QVector<double> &output, int windowSize);
     static void applyMedian(const QVector<double> &input, QVector<double> &output, int windowSize);
     static void applySimpleLowPass(const QVector<double> &input, QVector<double> &output, double alpha);
+    static void applyBandStop(const QVector<double> &input, QVector<double> &output, double fs, double frequency);
 };
 
 

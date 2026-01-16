@@ -319,6 +319,11 @@ void MainWindow::on_btnLowPass_clicked(){
     applyAndPlotFilter(FilterType::LOW_PASS);
 }
 
+void MainWindow::on_btnBandStop_clicked()
+{
+    applyAndPlotFilter(FilterType::BAND_STOP);
+}
+
 
 void MainWindow::on_btnSave_clicked()
 {
@@ -516,4 +521,7 @@ void MainWindow::on_btnUndo_clicked()
 
     ui->statusbar->showMessage("Son işlem geri alındı.", 2000);
 }
+
+
+
 
