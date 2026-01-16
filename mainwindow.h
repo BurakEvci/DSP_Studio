@@ -7,12 +7,20 @@
 #include "noiseprocessor.h"
 #include "fftprocessor.h"
 #include "filterprocessor.h"
+#include <QStack>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
+
+struct UndoState {
+    QVector<double> signalData; // Sinyalin kendisi
+    int sliderValue;            // O anki slider değeri
+    // İlerde buraya 'FilterType' bile ekleyebilirsin.
+};
 
 class MainWindow : public QMainWindow
 {
@@ -40,6 +48,8 @@ private slots:
     void on_btnSave_clicked();
 
     void on_btnLoad_clicked();
+
+    void on_btnUndo_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -78,5 +88,7 @@ private:
 
     void updateStats(const QVector<double> &signal);
 
+    // Geçmiş sinyalleri tutan Yığın (Tarihçe)
+    QStack<UndoState> undoStack;
 };
 #endif // MAINWINDOW_H

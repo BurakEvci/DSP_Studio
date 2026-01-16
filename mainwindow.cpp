@@ -123,12 +123,11 @@ void MainWindow::applyAndPlotFilter(FilterType type)
     QString paramName = "Değer";
     if (type == FilterType::MOVING_AVERAGE || type == FilterType::MEDIAN) {
         paramName = "Pencere Boyutu";
-    } else if (type == FilterType::LOW_PASS) {
-        paramName = "Filtre Gücü";
-    } else if (type == FilterType::BAND_STOP) {
+    } else if (type == FilterType::LOW_PASS || type == FilterType::HIGH_PASS) {
+        paramName = "Kesim Frekansı (Hz)";
+    } else if (type == FilterType::BAND_STOP || type == FilterType::BAND_PASS) {
         paramName = "Merkez Frekans (Hz)";
     }
-
     ui->lblSliderValue->setText(QString("%1: %2").arg(paramName).arg(param));
 
 
@@ -140,7 +139,7 @@ void MainWindow::applyAndPlotFilter(FilterType type)
         inputSignal = filteredSignal;
     }
     else if (!noisySignal.isEmpty()) {
-        // Henüz filtre yok ama gürültülü sinyal var
+        // Henüz filtre yok ama gürültülü sinyal var, İlk kez filtreliyorsak gürültülü sinyali al
         inputSignal = noisySignal;
     }
     else {
@@ -149,6 +148,24 @@ void MainWindow::applyAndPlotFilter(FilterType type)
     }
 
     if(inputSignal.isEmpty()) return;
+
+
+
+
+    // UNDO (GERİ AL) İÇİN KAYIT
+        // İşlem yapmadan önce elimizdeki sinyali kasaya (yığına) kilitliyoruz.
+        // Hafıza şişmesin diye son 10 işlemi tutuyoruz.
+    if (undoStack.size() > 10) {
+        undoStack.removeFirst(); // En eskiyi sil
+    }
+
+    // Paketi (Struct) Oluştur
+    UndoState state;
+    state.signalData = inputSignal;               // Sinyali koy
+    state.sliderValue = ui->sliderFilterParam->value(); // Slider değerini koy    // --------------------------------------------------------
+
+    // Paketi rafa kaldır (Push)
+    undoStack.push(state);
 
 
     // 4. FİLTREYİ HESAPLA
@@ -432,4 +449,71 @@ void MainWindow::updateStats(const QVector<double> &signal)
     ui->lblStatRMS->setText(QString::number(stats.rmsVal, 'f', 3));
 }
 
+
+
+void MainWindow::on_btnUndo_clicked()
+{
+    // 1. Yığın Kontrolü: Geri alınacak işlem var mı?
+    if (undoStack.isEmpty()) {
+        ui->statusbar->showMessage("Geri alınacak işlem yok!", 2000);
+        return;
+    }
+
+    // Kutuyu (Paketi) Geri Al (Pop)
+    UndoState state = undoStack.pop();
+
+    // 2. Sinyali Geri Yükle
+    filteredSignal = state.signalData;
+
+    // 3. SLIDER'I ESKİ KONUMUNA GETİR (İşte fark yaratan satır!)
+    // blockSignals(true) diyerek slider hareket edince tekrar filtre çalışmasını engelliyoruz (Sonsuz döngüden korur)
+    ui->sliderFilterParam->blockSignals(true);
+    ui->sliderFilterParam->setValue(state.sliderValue);
+    ui->sliderFilterParam->blockSignals(false);
+
+    // Label'ı da güncelle ki sayı doğru görünsün
+    // (Filtre tipine göre Label başlığı değişebileceği için basitçe değeri yazalım)
+    // Veya applyAndPlotFilter'daki label güncelleme mantığını buraya da ekleyebilirsin.
+    // Şimdilik sadece değeri güncelleyelim:
+    ui->lblSliderValue->setText(QString("Değer: %1").arg(state.sliderValue));
+
+
+
+    // Zaman Grafiğini (Alttaki Sol) Güncelle
+    // timeVec zaten sabit olduğu için sadece Y eksenini (filteredSignal) veriyoruz.
+    m_filteredTimePlot->updatePlot(timeVec, filteredSignal);
+
+
+    // 4. İstatistikleri Güncelle (Sağ Üst Kutu)
+    updateStats(filteredSignal);
+
+
+    // 5. FFT Grafiğini (Alttaki Sağ) Güncelle --- (TAM KOD) ---
+    // Burada applyAndPlotFilter fonksiyonundaki FFT mantığının aynısını kuruyoruz.
+
+    double fs = ui->txtSampleRate->text().toDouble();
+    QVector<double> freqAxis, magVec;
+
+    // Pencere tipini (Hamming, Hann vs.) arayüzden al
+    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+
+    // FFT Hesapla (filteredSignal kullanılarak)
+    FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
+
+    // dB (Logaritmik) mi Lineer mi? Kontrol et ve uygula
+    bool isDB = (ui->cmbFFTScale->currentIndex() == 1); // 1: dB, 0: Lineer
+    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
+
+    // Grafik başlıklarını ve eksen yazılarını duruma göre düzelt
+    if (isDB)
+        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
+    else
+        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
+
+    // Son olarak FFT grafiğini çiz
+    m_filteredFreqPlot->updatePlot(freqAxis, magVec);
+    // --------------------------------------------------------
+
+    ui->statusbar->showMessage("Son işlem geri alındı.", 2000);
+}
 

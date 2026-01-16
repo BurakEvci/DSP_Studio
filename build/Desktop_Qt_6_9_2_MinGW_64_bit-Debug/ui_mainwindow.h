@@ -103,6 +103,7 @@ public:
     QCustomPlot *customPlotFreqOriginal;
     QGroupBox *groupBox_13;
     QCustomPlot *customPlotFreqFiltered;
+    QPushButton *btnUndo;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -569,6 +570,9 @@ public:
 
         verticalLayout_3->addWidget(groupBox_10);
 
+        btnUndo = new QPushButton(centralwidget);
+        btnUndo->setObjectName("btnUndo");
+        btnUndo->setGeometry(QRect(30, 20, 81, 29));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -634,6 +638,7 @@ public:
         lblStatMean_2->setText(QCoreApplication::translate("MainWindow", "Ortalama (DC):", nullptr));
         groupBox_12->setTitle(QCoreApplication::translate("MainWindow", "Frekans Spektrumu (Giri\305\237)", nullptr));
         groupBox_13->setTitle(QCoreApplication::translate("MainWindow", "Frekans Spektrumu (\303\207\304\261k\304\261\305\237)", nullptr));
+        btnUndo->setText(QCoreApplication::translate("MainWindow", "Geri Al", nullptr));
     } // retranslateUi
 
 };
