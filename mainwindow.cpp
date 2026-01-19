@@ -6,7 +6,7 @@
 #include "utils.h"
 #include <QInputDialog>
 #include "statsprocessor.h"
-
+#include <QStyle>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -163,6 +163,7 @@ void MainWindow::applyAndPlotFilter(FilterType type)
     UndoState state;
     state.signalData = inputSignal;               // Sinyali koy
     state.sliderValue = ui->sliderFilterParam->value(); // Slider değerini koy    // --------------------------------------------------------
+    state.type = UndoFilter;
 
     // Paketi rafa kaldır (Push)
     undoStack.push(state);
@@ -228,17 +229,30 @@ void MainWindow::on_btnAddSignal_clicked()
 
 void MainWindow::on_btnAddNoise_clicked()
 {
-    // 1. Önce sinyal var mı kontrol et?
+    // 1. Önce ses sistemini durdur (Güvenlik için şart)
+    stopAudio();
+
+    // 2. Sonra sinyal var mı kontrol et?
     if (rawSignal.isEmpty()) {
         QMessageBox::warning(this, "Hata", "Önce bir sinyal oluşturmalısınız!");
         return;
     }
 
-    // 2. UI parametrelerini al
+    // UNDO İÇİN KAYIT ---
+    UndoState state;
+    state.signalData = noisySignal; // Şu anki gürültülü (veya boş) hali sakla
+    state.type = UndoNoise;         // "Bu bir gürültü yedeğidir" de
+    undoStack.push(state);
+
+    if (undoStack.size() > 10) undoStack.removeFirst(); // Hafıza dolmasın
+    // ----------------------------------------------
+
+
+    // 3. UI parametrelerini al
     double noiseAmp = ui->dsbNoiseAmplitude->value();
     NoiseType type = static_cast<NoiseType>(ui->cmbNoiseType->currentIndex());
 
-    // 3. Gürültü Ekle (Temiz 'rawSignal'i al, 'noisySignal'e yaz)
+    // 4. Gürültü Ekle (Temiz 'rawSignal'i al, 'noisySignal'e yaz)
     NoiseProcessor::addNoise(rawSignal, noisySignal, type, noiseAmp);
 
     // 4. Grafiği Güncelle
@@ -247,6 +261,22 @@ void MainWindow::on_btnAddNoise_clicked()
 
     updateFrequencyGraph();
     updateStats(noisySignal);
+
+    // --- 7. ÇIKIŞLARI (FİLTRELİ KISMI) TEMİZLE ---
+
+    // HATA ÇÖZÜMÜ: graph(0)->data()->clear() yerine;
+    // updatePlot fonksiyonuna "Boş Vektör" gönderiyoruz. Bu grafiği sıfırlar.
+    QVector<double> emptyVec;
+
+    // Alttaki Zaman Grafiğini Temizle
+    m_filteredTimePlot->updatePlot(emptyVec, emptyVec);
+
+    // Alttaki FFT Grafiğini Temizle
+    m_filteredFreqPlot->updatePlot(emptyVec, emptyVec);
+
+    // Filtrelenmiş sinyal verisini de hafızadan sil
+    filteredSignal.clear();
+
 }
 
 void MainWindow::on_btnClear_clicked()
@@ -278,6 +308,8 @@ void MainWindow::on_btnClear_clicked()
     ui->lblStatMin->setText("0.000");
     ui->lblStatMean->setText("0.000");
     ui->lblStatRMS->setText("0.000");
+
+    stopAudio();
 }
 
 
@@ -438,6 +470,8 @@ void MainWindow::on_btnLoad_clicked()
     } else {
         QMessageBox::critical(this, "Hata", "Dosya yüklenemedi! (Sadece 16-bit PCM WAV desteklenir).");
     }
+
+    stopAudio();
 }
 
 
@@ -458,70 +492,292 @@ void MainWindow::updateStats(const QVector<double> &signal)
 
 void MainWindow::on_btnUndo_clicked()
 {
-    // 1. Yığın Kontrolü: Geri alınacak işlem var mı?
+    // 1. Yığın Kontrolü
     if (undoStack.isEmpty()) {
         ui->statusbar->showMessage("Geri alınacak işlem yok!", 2000);
         return;
     }
 
-    // Kutuyu (Paketi) Geri Al (Pop)
+    // 2. Kutuyu (Paketi) Çıkar
     UndoState state = undoStack.pop();
 
-    // 2. Sinyali Geri Yükle
-    filteredSignal = state.signalData;
 
-    // 3. SLIDER'I ESKİ KONUMUNA GETİR (İşte fark yaratan satır!)
-    // blockSignals(true) diyerek slider hareket edince tekrar filtre çalışmasını engelliyoruz (Sonsuz döngüden korur)
-    ui->sliderFilterParam->blockSignals(true);
-    ui->sliderFilterParam->setValue(state.sliderValue);
-    ui->sliderFilterParam->blockSignals(false);
+    // --- DURUM A: EĞER GERİ ALINAN ŞEY BİR "GÜRÜLTÜ" İSE ---
+    if (state.type == UndoNoise) {
 
-    // Label'ı da güncelle ki sayı doğru görünsün
-    // (Filtre tipine göre Label başlığı değişebileceği için basitçe değeri yazalım)
-    // Veya applyAndPlotFilter'daki label güncelleme mantığını buraya da ekleyebilirsin.
-    // Şimdilik sadece değeri güncelleyelim:
-    ui->lblSliderValue->setText(QString("Değer: %1").arg(state.sliderValue));
+        // Gürültülü sinyali eski haline döndür
+        noisySignal = state.signalData;
+
+        // Üst Grafiği (Giriş) Güncelle
+        if (noisySignal.isEmpty()) {
+            // Eğer gürültü tamamen gittiyse saf sinyali çiz
+            m_origTimePlot->updatePlot(timeVec, rawSignal);
+        } else {
+            // Hala biraz gürültü varsa veya önceki gürültüye döndüysek onu çiz
+            m_origTimePlot->updatePlot(timeVec, noisySignal);
+        }
+
+        // Üst Frekans Grafiğini Güncelle
+        updateFrequencyGraph();
+
+        // İstatistikleri Güncelle (Giriş Sinyali İçin)
+        updateStats(noisySignal.isEmpty() ? rawSignal : noisySignal);
+
+        // ALT GRAFİKLERİ TEMİZLE
+        // (Çünkü giriş değiştiği için eski filtre sonucu artık geçersizdir)
+        filteredSignal.clear();
+        QVector<double> empty;
+        m_filteredTimePlot->updatePlot(empty, empty);
+        m_filteredFreqPlot->updatePlot(empty, empty);
+
+        ui->statusbar->showMessage("Gürültü işlemi geri alındı.", 2000);
+    }
 
 
+    // --- DURUM B: EĞER GERİ ALINAN ŞEY BİR "FİLTRE" İSE ---
+    else if (state.type == UndoFilter) {
 
-    // Zaman Grafiğini (Alttaki Sol) Güncelle
-    // timeVec zaten sabit olduğu için sadece Y eksenini (filteredSignal) veriyoruz.
-    m_filteredTimePlot->updatePlot(timeVec, filteredSignal);
+        // Sinyali Geri Yükle
+        filteredSignal = state.signalData;
+
+        // SLIDER'I ESKİ KONUMUNA GETİR
+        ui->sliderFilterParam->blockSignals(true); // Sonsuz döngü koruması
+        ui->sliderFilterParam->setValue(state.sliderValue);
+        ui->sliderFilterParam->blockSignals(false);
+
+        ui->lblSliderValue->setText(QString("Değer: %1").arg(state.sliderValue));
+
+        // Zaman Grafiğini Güncelle
+        m_filteredTimePlot->updatePlot(timeVec, filteredSignal);
+
+        // İstatistikleri Güncelle (Çıkış Sinyali İçin)
+        updateStats(filteredSignal);
+
+        // FFT Grafiğini Yeniden Hesapla ve Çiz (Senin yazdığın kodun aynısı)
+        double fs = ui->txtSampleRate->text().toDouble();
+        QVector<double> freqAxis, magVec;
+        WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+
+        FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
+
+        bool isDB = (ui->cmbFFTScale->currentIndex() == 1);
+        FFTProcessor::applyMagnitudeScaling(magVec, isDB);
+
+        if (isDB)
+            m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
+        else
+            m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
+
+        m_filteredFreqPlot->updatePlot(freqAxis, magVec);
+
+        ui->statusbar->showMessage("Filtre işlemi geri alındı.", 2000);
+    }
+}
+
+void MainWindow::playSignal(const QVector<double> &signal, int sampleRate, int type)
+{
+    if (signal.isEmpty()) return;
+
+    // 1. Eğer zaten bir şey çalıyorsa durdur
+    if (audioSink) {
+        audioSink->stop();
+        delete audioSink;
+        audioSink = nullptr;
+    }
+    if (audioBuffer) {
+        audioBuffer->close();
+        delete audioBuffer;
+        audioBuffer = nullptr;
+    }
+
+    // 2. Ses Formatını Ayarla (Standart CD Kalitesi: 16-bit, Mono)
+    QAudioFormat format;
+    format.setSampleRate(sampleRate);
+    format.setChannelCount(1); // Mono
+    format.setSampleFormat(QAudioFormat::Int16); // 16-bit ses
+
+    // Cihaz uygun mu kontrol et (Gerekirse varsayılanı al)
+    QAudioDevice info = QMediaDevices::defaultAudioOutput();
+    if (!info.isFormatSupported(format)) {
+        qWarning() << "Varsayılan format desteklenmiyor, en yakın formatı deniyorum.";
+        format = info.preferredFormat();
+    }
+
+    // 3. Veriyi Dönüştür (Double -> Int16 -> Byte)
+    audioBytes.clear();
+    QDataStream stream(&audioBytes, QIODevice::WriteOnly);
+    stream.setByteOrder(QDataStream::LittleEndian); // WAV standardı
+
+    int counter = 0;
+
+    for (double sample : signal) {
+        // Clipping Koruması: Sinyal 1.0'ı geçerse cızırtı yapar, sınırlayalım.
+        if (sample > 1.0) sample = 1.0;
+        if (sample < -1.0) sample = -1.0;
+
+        // Double (-1.0 .. 1.0) -> Int16 (-32768 .. 32767)
+        qint16 pcmSample = static_cast<qint16>(sample * 32767.0);
+        stream << pcmSample;
+
+        // --- DONMAYI ENGELLEYEN KOD ---
+        // Her 10.000 örnekte bir arayüze "Nefes al, tıklamaları kontrol et" diyoruz.
+        counter++;
+        if (counter % 10000 == 0) {
+            QCoreApplication::processEvents();
+        }
+        // --------------------------------------
+    }
+
+    // 4. Oynatıcıyı Hazırla
+    audioBuffer = new QBuffer(&audioBytes);
+    audioBuffer->open(QIODevice::ReadOnly); // Okuma modunda aç
+
+    audioSink = new QAudioSink(info, format, this);
 
 
-    // 4. İstatistikleri Güncelle (Sağ Üst Kutu)
-    updateStats(filteredSignal);
-
-
-    // 5. FFT Grafiğini (Alttaki Sağ) Güncelle --- (TAM KOD) ---
-    // Burada applyAndPlotFilter fonksiyonundaki FFT mantığının aynısını kuruyoruz.
-
-    double fs = ui->txtSampleRate->text().toDouble();
-    QVector<double> freqAxis, magVec;
-
-    // Pencere tipini (Hamming, Hann vs.) arayüzden al
-    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
-
-    // FFT Hesapla (filteredSignal kullanılarak)
-    FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
-
-    // dB (Logaritmik) mi Lineer mi? Kontrol et ve uygula
-    bool isDB = (ui->cmbFFTScale->currentIndex() == 1); // 1: dB, 0: Lineer
-    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
-
-    // Grafik başlıklarını ve eksen yazılarını duruma göre düzelt
-    if (isDB)
-        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
-    else
-        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
-
-    // Son olarak FFT grafiğini çiz
-    m_filteredFreqPlot->updatePlot(freqAxis, magVec);
+    // SES SEVİYESİNİ SLIDER'DAN AL ---
+    // Slider'ın o anki değerini okuyup uygula
+    qreal currentVolume = ui->sliderVolume->value() / 100.0;
+    audioSink->setVolume(currentVolume);
     // --------------------------------------------------------
 
-    ui->statusbar->showMessage("Son işlem geri alındı.", 2000);
+    // Sesi çalmaya başla!
+    connect(audioSink, &QAudioSink::stateChanged, this, [&](QAudio::State state){
+        if (state == QAudio::IdleState) {
+            // Ses bitince buffer'ı kapatabiliriz veya durdur butonu halleder.
+            // Burası ses bitince otomatik bir şey yapmak istersen (örn. Loop) kullanılır.
+        }
+    });
+
+
+    // TİPİ KAYDET ---
+    currentAudioType = type;
+    // ---------------------------------
+
+
+    // Sesi çalmaya başla!
+    audioSink->start(audioBuffer);
+
+    ui->statusbar->showMessage("Ses çalınıyor...", 3000);
+}
+
+void MainWindow::on_btnPlayInput_clicked()
+{
+    // 1. Durum: Zaten bu sinyal (Giriş) hafızadaysa
+    if (audioSink && currentAudioType == 1) {
+
+        // Çalıyorsa -> DURAKLAT
+        if (audioSink->state() == QAudio::ActiveState) {
+            audioSink->suspend();
+            // İKONU DEĞİŞTİR: "Play" Yap (Çünkü durdu, basınca çalmalı)
+
+            ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+            ui->btnPlayInput->setText(""); // Yazıyı sil ki sadece ikon görünsün (isteğe bağlı)
+
+            ui->statusbar->showMessage("Giriş sinyali duraklatıldı.", 2000);
+            return; // Çık, yeniden başlatma
+        }
+
+        // Durakladıysa -> DEVAM ET
+        else if (audioSink->state() == QAudio::SuspendedState) {
+            audioSink->resume();
+
+            // İKONU DEĞİŞTİR: "Pause" Yap (Çünkü çalıyor, basınca durmalı)
+            ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+
+            ui->statusbar->showMessage("Devam ediliyor...", 2000);
+            return; // Çık
+        }
+    }
+
+
+    // Giriş sinyalini çal (noisy varsa onu, yoksa raw'ı)
+    QVector<double> signalToPlay = noisySignal.isEmpty() ? rawSignal : noisySignal;
+
+    // Sample Rate kutusundan değeri al
+    int fs = ui->txtSampleRate->text().toInt();
+
+    // Tip olarak '1' (Giriş) gönderiyoruz
+    playSignal(signalToPlay, fs, 1);
+
+    // Buton yazısını güncelle
+    ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+
+    //playSignal(signalToPlay, fs);
 }
 
 
+void MainWindow::on_btnPlayOutput_clicked()
+{
+    if (filteredSignal.isEmpty()) {
+        ui->statusbar->showMessage("Çalınacak filtrelenmiş sinyal yok!", 2000);
+        return;
+    }
+
+    // 1. Durum: Zaten bu sinyal (Çıkış) hafızadaysa
+    if (audioSink && currentAudioType == 2) {
+
+        if (audioSink->state() == QAudio::ActiveState) {
+            audioSink->suspend();
 
 
+            // İKONU DEĞİŞTİR: "Play" Yap (Çünkü durdu, basınca çalmalı)
+            ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+            ui->btnPlayOutput->setText(""); // Yazıyı sil ki sadece ikon görünsün (isteğe bağlı)
+            ui->statusbar->showMessage("Çıkış sinyali duraklatıldı.", 2000);
+            return;
+        }
+        else if (audioSink->state() == QAudio::SuspendedState) {
+            audioSink->resume();
+            // İKONU DEĞİŞTİR: "Pause" Yap (Çünkü çalıyor, basınca durmalı)
+            ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+            ui->statusbar->showMessage("Devam ediliyor...", 2000);
+            return;
+        }
+    }
+
+    // 2. Durum: Sıfırdan Başlat
+    int fs = ui->txtSampleRate->text().toInt();
+
+    // Tip olarak '2' (Çıkış) gönderiyoruz
+    playSignal(filteredSignal, fs, 2);
+
+    // Başladığı an butonu "Pause" ikonuna çevir
+    ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+}
+
+void MainWindow::on_sliderVolume_valueChanged(int value)
+{
+    // Slider 0-100 arası geliyor, biz onu 0.0 - 1.0 arasına çeviriyoruz.
+    qreal linearVolume = value / 100.0;
+
+    // Eğer o an ses çıkış nesnesi açıksa sesini güncelle
+    if (audioSink) {
+        audioSink->setVolume(linearVolume);
+    }
+
+    // Kullanıcıya bilgi ver (Opsiyonel)
+    ui->statusbar->showMessage(QString("Ses Seviyesi: %%1").arg(value), 1000);
+}
+
+void MainWindow::stopAudio()
+{
+    // 1. Ses Çıkış Nesnesi Varsa Durdur
+    if (audioSink) {
+        audioSink->stop();
+        audioSink->reset(); // Tamamen sıfırla
+    }
+
+    // 2. Buffer'ı Kapat
+    if (audioBuffer) {
+        audioBuffer->close();
+    }
+
+    // 3. Durumu Sıfırla
+    currentAudioType = 0; // Hiçbir şey çalmıyor
+
+    // 4. UI Güncelle (Play/Pause butonları varsa sıfırla)
+    // stopAudio() fonksiyonunun içine:
+    if (ui->btnPlayInput) ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    if (ui->btnPlayOutput) ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+}

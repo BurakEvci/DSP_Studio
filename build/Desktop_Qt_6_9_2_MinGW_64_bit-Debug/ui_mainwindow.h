@@ -10,6 +10,7 @@
 #define UI_MAINWINDOW_H
 
 #include <QtCore/QVariant>
+#include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
@@ -104,6 +105,9 @@ public:
     QGroupBox *groupBox_13;
     QCustomPlot *customPlotFreqFiltered;
     QPushButton *btnUndo;
+    QPushButton *btnPlayInput;
+    QPushButton *btnPlayOutput;
+    QSlider *sliderVolume;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -111,7 +115,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(1317, 820);
+        MainWindow->resize(1317, 874);
         MainWindow->setStyleSheet(QString::fromUtf8("/* Global dark canvas for Designer + runtime */\n"
 "QWidget {\n"
 "    background-color: #1e1e1e;\n"
@@ -432,7 +436,7 @@ public:
 
         horizontalLayoutWidget = new QWidget(centralwidget);
         horizontalLayoutWidget->setObjectName("horizontalLayoutWidget");
-        horizontalLayoutWidget->setGeometry(QRect(20, 699, 1271, 51));
+        horizontalLayoutWidget->setGeometry(QRect(20, 740, 1271, 51));
         horizontalLayout_2 = new QHBoxLayout(horizontalLayoutWidget);
         horizontalLayout_2->setObjectName("horizontalLayout_2");
         horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
@@ -572,7 +576,26 @@ public:
 
         btnUndo = new QPushButton(centralwidget);
         btnUndo->setObjectName("btnUndo");
-        btnUndo->setGeometry(QRect(30, 20, 81, 29));
+        btnUndo->setGeometry(QRect(30, 20, 31, 29));
+        QIcon icon(QIcon::fromTheme(QIcon::ThemeIcon::EditUndo));
+        btnUndo->setIcon(icon);
+        btnPlayInput = new QPushButton(centralwidget);
+        btnPlayInput->setObjectName("btnPlayInput");
+        btnPlayInput->setGeometry(QRect(390, 700, 41, 31));
+        QIcon icon1(QIcon::fromTheme(QIcon::ThemeIcon::MediaPlaybackStart));
+        btnPlayInput->setIcon(icon1);
+        btnPlayInput->setIconSize(QSize(24, 24));
+        btnPlayOutput = new QPushButton(centralwidget);
+        btnPlayOutput->setObjectName("btnPlayOutput");
+        btnPlayOutput->setGeometry(QRect(850, 700, 41, 31));
+        btnPlayOutput->setIcon(icon1);
+        btnPlayOutput->setIconSize(QSize(24, 24));
+        sliderVolume = new QSlider(centralwidget);
+        sliderVolume->setObjectName("sliderVolume");
+        sliderVolume->setGeometry(QRect(500, 710, 160, 18));
+        sliderVolume->setMaximum(100);
+        sliderVolume->setValue(50);
+        sliderVolume->setOrientation(Qt::Orientation::Horizontal);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -638,7 +661,9 @@ public:
         lblStatMean_2->setText(QCoreApplication::translate("MainWindow", "Ortalama (DC):", nullptr));
         groupBox_12->setTitle(QCoreApplication::translate("MainWindow", "Frekans Spektrumu (Giri\305\237)", nullptr));
         groupBox_13->setTitle(QCoreApplication::translate("MainWindow", "Frekans Spektrumu (\303\207\304\261k\304\261\305\237)", nullptr));
-        btnUndo->setText(QCoreApplication::translate("MainWindow", "Geri Al", nullptr));
+        btnUndo->setText(QString());
+        btnPlayInput->setText(QString());
+        btnPlayOutput->setText(QString());
     } // retranslateUi
 
 };

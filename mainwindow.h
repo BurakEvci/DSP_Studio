@@ -1,6 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QAudioSink> // Sesi hoparlöre göndermek için (Qt6)
+// Qt5 için <QAudioOutput>
+#include <QMediaDevices>
+#include <QAudioDevice>
+#include <QBuffer>      // Sinyali hafızadan okumak için
+
 #include <QMainWindow>
 #include "plotmanager.h"
 #include "signalgenerator.h"
@@ -16,10 +22,16 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+enum UndoType {
+    UndoFilter, // Filtre işlemini geri almak için
+    UndoNoise   // Gürültü işlemini geri almak için
+};
+
 struct UndoState {
     QVector<double> signalData; // Sinyalin kendisi
     int sliderValue;            // O anki slider değeri
     // İlerde buraya 'FilterType' bile ekleyebilirsin.
+    UndoType type;
 };
 
 class MainWindow : public QMainWindow
@@ -52,6 +64,14 @@ private slots:
     void on_btnUndo_clicked();
 
     void on_btnBandStop_clicked();
+
+    void on_btnPlayInput_clicked();
+
+    void on_btnPlayOutput_clicked();
+
+    void on_sliderVolume_valueChanged(int value);
+
+    void on_btnPause_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -92,5 +112,19 @@ private:
 
     // Geçmiş sinyalleri tutan Yığın (Tarihçe)
     QStack<UndoState> undoStack;
+
+    // Ses çalma nesneleri
+    QAudioSink *audioSink = nullptr;
+    QIODevice *audioDevice = nullptr; // Sesi içine yazacağımız sanal aygıt
+    QBuffer *audioBuffer = nullptr;   // Veriyi tutacak tampon bellek
+    QByteArray audioBytes;            // Double veriyi Byte'a çevirip burada tutacağız
+
+    // Yardımcı fonksiyonumuz
+    void playSignal(const QVector<double> &signal, int sampleRate, int type = 0);
+
+    // Hangi sinyal çalınıyor? (0: Yok, 1: Giriş, 2: Çıkış/Filtreli)
+    int currentAudioType = 0;
+    void stopAudio();
+
 };
 #endif // MAINWINDOW_H
