@@ -75,6 +75,8 @@ private slots:
 
     void updatePlayHead(); // Timer her attığında çalışacak fonksiyon
 
+    void on_cmbWindowType_currentIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
 
@@ -130,6 +132,7 @@ private:
 
     QCPItemLine *playHeadLine; // Kırmızı dikey çizgimiz
     QTimer *playHeadTimer;     // Çizgiyi hareket ettiren zamanlayıcı
+    QCPItemLine *playHeadLineOutput;
 
     void updateOutputFFT(); // YENİ: Çıkış FFT grafiğini güncelleyen yardımcı fonksiyon
 

@@ -54,6 +54,16 @@ MainWindow::MainWindow(QWidget *parent)
     playHeadLine->end->setCoords(0, 2);     // Bitiş (Y ekseninin en üstü)
     playHeadLine->setVisible(false);        // Başta gizli olsun
 
+    // --- ÇIKIŞ ÇİZGİSİ ---
+    // Bunu "m_filteredTimePlot" üzerine ekliyoruz!
+    playHeadLineOutput = new QCPItemLine(m_filteredTimePlot->getPlot());
+    playHeadLineOutput->setPen(QPen(Qt::red, 2)); // İstersen rengini farklı yapabilirsin (örn: Qt::blue)
+    playHeadLineOutput->start->setCoords(0, -2);
+    playHeadLineOutput->end->setCoords(0, 2);
+    playHeadLineOutput->setVisible(false);
+    // -----------------------------------
+
+
     // -------------------------------------------------------------------------
     // ADIM 3: TIMER (ZAMANLAYICI) KURULUMU
     // -------------------------------------------------------------------------
@@ -100,39 +110,35 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateFrequencyGraph()
 {
-    // Hangi sinyali çizeceğiz? Gürültülü varsa onu, yoksa ham sinyali.
-    QVector<double> signalToProcess;
-    if (!noisySignal.isEmpty()) {
-        signalToProcess = noisySignal;
-    } else if (!rawSignal.isEmpty()) {
-        signalToProcess = rawSignal;
-    } else {
-        return; // Veri yok
-    }
+    // Hangi sinyali çizeceğiz? (Gürültülü varsa onu, yoksa saf sinyali)
+    QVector<double> signalToPlot = noisySignal.isEmpty() ? rawSignal : noisySignal;
 
+    if (signalToPlot.isEmpty()) return;
+
+    // Parametreleri Arayüzden Al
     double fs = ui->txtSampleRate->text().toDouble();
-
-    // Pencere tipini UI'dan al
-    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
-
-    // FFT Hesapla
-    FFTProcessor::computeFFT(signalToProcess, fs, freqVec, magVec, wType);
-
-    // YENİ: Ölçekleme Kontrolü
-    // ComboBox'ta 0: Lineer, 1: dB
     bool isDB = (ui->cmbFFTScale->currentIndex() == 1);
+
+    // --- İŞTE EKSİK OLAN SATIR BUYDU ---
+    // ComboBox'tan seçilen pencere tipini okuyoruz
+    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+    // -----------------------------------
+
+    // FFT Hesapla (wType parametresini buraya veriyoruz!)
+    QVector<double> freqAxis, magVec;
+    FFTProcessor::computeFFT(signalToPlot, fs, freqAxis, magVec, wType);
+
+    // dB Dönüşümü
     FFTProcessor::applyMagnitudeScaling(magVec, isDB);
 
-
-
-    // Grafiği Güncelle
-    // Eğer dB seçiliyse Y ekseni etiketini güncelleyeceğiz
+    // Başlık ve Eksenler
     if (isDB)
-        m_origFreqPlot->setupPlot("Frekans Spektrumu", "Frekans (Hz)", "Genlik (dB)");
+        m_origFreqPlot->setupPlot("Frekans Spektrumu (Giriş)", "Frekans (Hz)", "Genlik (dB)");
     else
-        m_origFreqPlot->setupPlot("Frekans Spektrumu", "Frekans (Hz)", "Genlik");
+        m_origFreqPlot->setupPlot("Frekans Spektrumu (Giriş)", "Frekans (Hz)", "Genlik");
 
-    m_origFreqPlot->updatePlot(freqVec, magVec);
+    // Çiz
+    m_origFreqPlot->updatePlot(freqAxis, magVec);
 }
 
 void MainWindow::applyAndPlotFilter(FilterType type)
@@ -211,28 +217,29 @@ void MainWindow::applyAndPlotFilter(FilterType type)
     m_filteredTimePlot->updatePlot(timeVec, filteredSignal);
 
 
-    // 6. FİLTRELİ FFT HESAPLA VE ÇİZ
-    QVector<double> freqAxis, magVec;
-
-    // WindowType'ı UI'dan al
-    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
-
-
-    FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
-
-    // dB dönüşümü isteniyor mu?
-    bool isDB = (ui->cmbFFTScale->currentIndex() == 1); // 1: dB, 0: Lineer
-    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
-
-    // Başlığı güncelle
-    if (isDB)
-        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
-    else
-        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
-
-    m_filteredFreqPlot->updatePlot(freqAxis, magVec);
-
+//    // 6. FİLTRELİ FFT HESAPLA VE ÇİZ
+//    QVector<double> freqAxis, magVec;
+//
+//    // WindowType'ı UI'dan al
+//    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+//
+//
+//    FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
+//
+//    // dB dönüşümü isteniyor mu?
+//    bool isDB = (ui->cmbFFTScale->currentIndex() == 1); // 1: dB, 0: Lineer
+//    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
+//
+//    // Başlığı güncelle
+//    if (isDB)
+//        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
+//    else
+//        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
+//
+//    m_filteredFreqPlot->updatePlot(freqAxis, magVec);
+//
     updateStats(filteredSignal);
+    updateOutputFFT();
 }
 
 
@@ -529,6 +536,9 @@ void MainWindow::updateStats(const QVector<double> &signal)
 
 void MainWindow::on_btnUndo_clicked()
 {
+    // EĞER MÜZİK ÇALIYORSA ÖNCE DURDUR (Senkronizasyon bozulmasın)
+    stopAudio();
+
     // 1. Yığın Kontrolü
     if (undoStack.isEmpty()) {
         ui->statusbar->showMessage("Geri alınacak işlem yok!", 2000);
@@ -591,21 +601,8 @@ void MainWindow::on_btnUndo_clicked()
         updateStats(filteredSignal);
 
         // FFT Grafiğini Yeniden Hesapla ve Çiz (Senin yazdığın kodun aynısı)
-        double fs = ui->txtSampleRate->text().toDouble();
-        QVector<double> freqAxis, magVec;
-        WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
 
-        FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
-
-        bool isDB = (ui->cmbFFTScale->currentIndex() == 1);
-        FFTProcessor::applyMagnitudeScaling(magVec, isDB);
-
-        if (isDB)
-            m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
-        else
-            m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
-
-        m_filteredFreqPlot->updatePlot(freqAxis, magVec);
+        updateOutputFFT();
 
         ui->statusbar->showMessage("Filtre işlemi geri alındı.", 2000);
     }
@@ -826,6 +823,13 @@ void MainWindow::stopAudio()
         playHeadLine->end->setCoords(0, 2);
     }
 
+    // Çıkış Çizgisini Sıfırla
+    if (playHeadLineOutput) {
+        playHeadLineOutput->setVisible(false);
+        playHeadLineOutput->start->setCoords(0, -2);
+        playHeadLineOutput->end->setCoords(0, 2);
+    }
+
     // Grafik çizimini güvenli hale getir
     if (m_origTimePlot) {
         m_origTimePlot->getPlot()->replot();
@@ -842,6 +846,8 @@ void MainWindow::stopAudio()
     // Buton ikonlarını "Play" moduna getir
     if (ui->btnPlayInput) ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     if (ui->btnPlayOutput) ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+
+    if (ui->statusbar) ui->statusbar->showMessage("Ses durduruldu.", 2000);
 }
 
 void MainWindow::updatePlayHead()
@@ -854,15 +860,36 @@ void MainWindow::updatePlayHead()
     // Saniyeye çevir (X ekseni saniye olduğu için)
     double currentSec = processedUSecs / 1000000.0;
 
-    // Çizgiyi yeni konuma taşı
-    // Sadece X değişiyor, Y sabit kalıyor (-2 ile +2 arası tüm ekranı kessin diye)
-    playHeadLine->start->setCoords(currentSec, -10);
-    playHeadLine->end->setCoords(currentSec, 10);
+    // 2. HANGİSİ ÇALIYORSA ONU GÜNCELLE
+    if (currentAudioType == 1) {
+        // --- GİRİŞ SİNYALİ ÇALIYOR ---
 
-    // Grafiği yenile
-    m_origTimePlot->getPlot()->replot();
+        // Giriş çizgisini güncelle ve göster
+        playHeadLine->start->setCoords(currentSec, -10);
+        playHeadLine->end->setCoords(currentSec, 10);
+        playHeadLine->setVisible(true);
 
-    // Eğer filtreli grafik çalıyorsa oraya da ekleyebiliriz ama şimdilik girişte kalsın.
+        // Çıkış çizgisini gizle
+        playHeadLineOutput->setVisible(false);
+
+        // Sadece giriş grafiğini yenile
+        m_origTimePlot->getPlot()->replot();
+    }
+    else if (currentAudioType == 2) {
+        // --- ÇIKIŞ (FİLTRELİ) SİNYALİ ÇALIYOR ---
+
+        // Çıkış çizgisini güncelle ve göster
+        playHeadLineOutput->start->setCoords(currentSec, -10);
+        playHeadLineOutput->end->setCoords(currentSec, 10);
+        playHeadLineOutput->setVisible(true);
+
+        // Giriş çizgisini gizle
+        playHeadLine->setVisible(false);
+
+        // Sadece çıkış grafiğini yenile
+        m_filteredTimePlot->getPlot()->replot();
+    }
+
 }
 
 void MainWindow::updateOutputFFT()
@@ -895,3 +922,13 @@ void MainWindow::updateOutputFFT()
     // 6. Çiz
     m_filteredFreqPlot->updatePlot(freqAxis, magVec);
 }
+
+void MainWindow::on_cmbWindowType_currentIndexChanged(int index)
+{
+    // 1. Üstteki (Giriş) Frekans Grafiğini Güncelle
+    updateFrequencyGraph();
+
+    // 2. Alttaki (Filtreli) Frekans Grafiğini Güncelle
+    updateOutputFFT();
+}
+
