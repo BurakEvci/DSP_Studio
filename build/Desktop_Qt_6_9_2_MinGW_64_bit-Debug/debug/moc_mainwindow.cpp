@@ -59,7 +59,7 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "on_btnPlayInput_clicked",
         "on_btnPlayOutput_clicked",
         "on_sliderVolume_valueChanged",
-        "on_btnPause_clicked"
+        "updatePlayHead"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -99,7 +99,7 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SlotData<void(int)>(18, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { QMetaType::Int, 8 },
         }}),
-        // Slot 'on_btnPause_clicked'
+        // Slot 'updatePlayHead'
         QtMocHelpers::SlotData<void()>(19, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
@@ -139,6 +139,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 12: _t->on_btnPlayInput_clicked(); break;
         case 13: _t->on_btnPlayOutput_clicked(); break;
         case 14: _t->on_sliderVolume_valueChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 15: _t->updatePlayHead(); break;
         default: ;
         }
     }

@@ -15,6 +15,8 @@
 #include "filterprocessor.h"
 #include <QStack>
 #include <QVector>
+#include <QTimer>
+#include "qcustomplot.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -71,7 +73,7 @@ private slots:
 
     void on_sliderVolume_valueChanged(int value);
 
-    void on_btnPause_clicked();
+    void updatePlayHead(); // Timer her attığında çalışacak fonksiyon
 
 private:
     Ui::MainWindow *ui;
@@ -125,6 +127,11 @@ private:
     // Hangi sinyal çalınıyor? (0: Yok, 1: Giriş, 2: Çıkış/Filtreli)
     int currentAudioType = 0;
     void stopAudio();
+
+    QCPItemLine *playHeadLine; // Kırmızı dikey çizgimiz
+    QTimer *playHeadTimer;     // Çizgiyi hareket ettiren zamanlayıcı
+
+    void updateOutputFFT(); // YENİ: Çıkış FFT grafiğini güncelleyen yardımcı fonksiyon
 
 };
 #endif // MAINWINDOW_H

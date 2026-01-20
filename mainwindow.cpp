@@ -7,13 +7,19 @@
 #include <QInputDialog>
 #include "statsprocessor.h"
 #include <QStyle>
-
+#include <QTimer>
+#include "qcustomplot.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // -------------------------------------------------------------------------
+    // ADIM 1: ÖNCE GRAFİK YÖNETİCİLERİNİ OLUŞTUR (ÇOK ÖNEMLİ!)
+    // -------------------------------------------------------------------------
+    // Bunları en başta oluşturmalıyız ki, daha sonra "playHeadLine" bunları kullanabilsin.
 
     // --- MODÜLER BAĞLANTI ---
     // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeOriginal"i teslim ediyoruz.
@@ -35,13 +41,39 @@ MainWindow::MainWindow(QWidget *parent)
     m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
 
 
+    // -------------------------------------------------------------------------
+    // ADIM 2: KIRMIZI ÇİZGİYİ (PLAYHEAD) OLUŞTUR
+    // -------------------------------------------------------------------------
+    // Artık m_origTimePlot oluştuğu için ->getPlot() diyebiliriz. Güvenli.
+
+    // 1. Kırmızı Çizgiyi Oluştur
+    playHeadLine = new QCPItemLine(m_origTimePlot->getPlot()); // Giriş grafiğine ekle
+    playHeadLine->setPen(QPen(Qt::red, 2)); // Kırmızı ve 2px kalınlık
+    // Çizginin boyunu çok uzun yapıyoruz ki sinyal ne kadar büyük olsa da görünsün (-2 ile 2 arası)
+    playHeadLine->start->setCoords(0, -2);  // Başlangıç (Y ekseninin en altı)
+    playHeadLine->end->setCoords(0, 2);     // Bitiş (Y ekseninin en üstü)
+    playHeadLine->setVisible(false);        // Başta gizli olsun
+
+    // -------------------------------------------------------------------------
+    // ADIM 3: TIMER (ZAMANLAYICI) KURULUMU
+    // -------------------------------------------------------------------------
+    // Timer'ı Hazırla
+    playHeadTimer = new QTimer(this);
+    playHeadTimer->setInterval(50); // 50 milisaniyede bir güncelle (Akıcı görüntü için)
+    connect(playHeadTimer, &QTimer::timeout, this, &MainWindow::updatePlayHead);
+
+
+    // -------------------------------------------------------------------------
+    // ADIM 4: ARAYÜZ ELEMANLARINI DOLDUR (COMBOBOX & SLIDER)
+    // -------------------------------------------------------------------------
+
     // ComboBox doldurma SignalType
     ui->cmbSignalType->addItems({"Sinüs", "Kare", "Üçgen", "Testere Dişi"});
     // ComboBox doldurma NoiseType
     ui->cmbNoiseType->addItems({"White Noise", "Impulse Noise", "Sinusoidal Noise"});
     // ComboBox doldurma WindowType
     ui->cmbWindowType->addItems({"Rectangular", "Hann", "Hamming", "Blackman"});
-    // ComboBox doldurma WindowType
+    // ComboBox doldurma WindowType FFT Ölçeği
     ui->cmbFFTScale->addItems({"Lineer", "dB (Logaritmik)"});
 
     // Slider Başlangıç Ayarları
@@ -317,7 +349,12 @@ void MainWindow::on_btnClear_clicked()
 
 void MainWindow::on_cmbFFTScale_currentIndexChanged(int index)
 {
+    // 1. Üst Grafiği (Giriş) Güncelle
+    // (Zaten senin var olan fonksiyonun)
     updateFrequencyGraph();
+
+    // 2. Alttaki Grafiği (Çıkış) Güncelle
+    updateOutputFFT();
 }
 
 
@@ -655,6 +692,11 @@ void MainWindow::playSignal(const QVector<double> &signal, int sampleRate, int t
     // ---------------------------------
 
 
+
+    playHeadLine->setVisible(true); // Çizgiyi göster
+    playHeadTimer->start();         // Hareketi başlat
+
+
     // Sesi çalmaya başla!
     audioSink->start(audioBuffer);
 
@@ -674,6 +716,7 @@ void MainWindow::on_btnPlayInput_clicked()
             ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
             ui->btnPlayInput->setText(""); // Yazıyı sil ki sadece ikon görünsün (isteğe bağlı)
 
+            playHeadTimer->stop(); // Çizgiyi dondur
             ui->statusbar->showMessage("Giriş sinyali duraklatıldı.", 2000);
             return; // Çık, yeniden başlatma
         }
@@ -685,6 +728,7 @@ void MainWindow::on_btnPlayInput_clicked()
             // İKONU DEĞİŞTİR: "Pause" Yap (Çünkü çalıyor, basınca durmalı)
             ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
 
+            playHeadTimer->start(); // Çizgiyi tekrar hareket ettir
             ui->statusbar->showMessage("Devam ediliyor...", 2000);
             return; // Çık
         }
@@ -762,22 +806,92 @@ void MainWindow::on_sliderVolume_valueChanged(int value)
 
 void MainWindow::stopAudio()
 {
-    // 1. Ses Çıkış Nesnesi Varsa Durdur
+    // 1. Önce Ses Motorunu Durdur ve Sıfırla
     if (audioSink) {
-        audioSink->stop();
-        audioSink->reset(); // Tamamen sıfırla
+        // Sadece çalışıyor veya duraklatılmışsa stop de
+        if (audioSink->state() == QAudio::ActiveState || audioSink->state() == QAudio::SuspendedState) {
+            audioSink->stop();
+        }
+        audioSink->reset(); // Buffer ile bağlantıyı kopar (Kritik nokta)
     }
 
-    // 2. Buffer'ı Kapat
-    if (audioBuffer) {
+    // 2. Playhead (Kırmızı Çizgi) ve Timer Temizliği
+    if (playHeadTimer && playHeadTimer->isActive()) {
+        playHeadTimer->stop();
+    }
+
+    if (playHeadLine) {
+        playHeadLine->setVisible(false);
+        playHeadLine->start->setCoords(0, -2); // Başlangıç konumu
+        playHeadLine->end->setCoords(0, 2);
+    }
+
+    // Grafik çizimini güvenli hale getir
+    if (m_origTimePlot) {
+        m_origTimePlot->getPlot()->replot();
+    }
+
+    // 3. Buffer'ı Kapat (Ses motoru ayrıldıktan sonra)
+    if (audioBuffer && audioBuffer->isOpen()) {
         audioBuffer->close();
     }
 
-    // 3. Durumu Sıfırla
-    currentAudioType = 0; // Hiçbir şey çalmıyor
+    // 4. Durumu ve Arayüzü Sıfırla
+    currentAudioType = 0;
 
-    // 4. UI Güncelle (Play/Pause butonları varsa sıfırla)
-    // stopAudio() fonksiyonunun içine:
+    // Buton ikonlarını "Play" moduna getir
     if (ui->btnPlayInput) ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     if (ui->btnPlayOutput) ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+}
+
+void MainWindow::updatePlayHead()
+{
+    if (!audioSink) return;
+
+    // Şu an kaçıncı mikrosaniyedeyiz? (1 sn = 1.000.000 mikrosaniye)
+    qint64 processedUSecs = audioSink->processedUSecs();
+
+    // Saniyeye çevir (X ekseni saniye olduğu için)
+    double currentSec = processedUSecs / 1000000.0;
+
+    // Çizgiyi yeni konuma taşı
+    // Sadece X değişiyor, Y sabit kalıyor (-2 ile +2 arası tüm ekranı kessin diye)
+    playHeadLine->start->setCoords(currentSec, -10);
+    playHeadLine->end->setCoords(currentSec, 10);
+
+    // Grafiği yenile
+    m_origTimePlot->getPlot()->replot();
+
+    // Eğer filtreli grafik çalıyorsa oraya da ekleyebiliriz ama şimdilik girişte kalsın.
+}
+
+void MainWindow::updateOutputFFT()
+{
+    // 1. Eğer filtrelenmiş sinyal yoksa grafiği temizle ve çık
+    if (filteredSignal.isEmpty()) {
+        QVector<double> empty;
+        m_filteredFreqPlot->updatePlot(empty, empty);
+        return;
+    }
+
+    // 2. Gerekli parametreleri al
+    double fs = ui->txtSampleRate->text().toDouble();
+    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
+    bool isDB = (ui->cmbFFTScale->currentIndex() == 1); // 0: Lineer, 1: dB
+
+    // 3. FFT Hesapla
+    QVector<double> freqAxis, magVec;
+    FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
+
+    // 4. dB Dönüşümü Yap (Eğer seçiliyse)
+    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
+
+    // 5. Başlıkları Ayarla
+    if (isDB)
+        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
+    else
+        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
+
+    // 6. Çiz
+    m_filteredFreqPlot->updatePlot(freqAxis, magVec);
 }

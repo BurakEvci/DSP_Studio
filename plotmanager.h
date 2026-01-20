@@ -20,6 +20,9 @@ public:
     // Grafiği temizler
     void clearPlot();
 
+    QCustomPlot* getPlot() const { return plot; }
+
+
 private:
     QCustomPlot *plot; // Yönettiğimiz grafik aracı
 
