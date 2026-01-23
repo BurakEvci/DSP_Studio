@@ -12,6 +12,7 @@
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QGroupBox>
@@ -108,6 +109,8 @@ public:
     QPushButton *btnPlayInput;
     QPushButton *btnPlayOutput;
     QSlider *sliderVolume;
+    QCheckBox *chkRealTime;
+    QPushButton *btnRecord;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -596,10 +599,18 @@ public:
         sliderVolume->setMaximum(100);
         sliderVolume->setValue(50);
         sliderVolume->setOrientation(Qt::Orientation::Horizontal);
+        chkRealTime = new QCheckBox(centralwidget);
+        chkRealTime->setObjectName("chkRealTime");
+        chkRealTime->setGeometry(QRect(30, 700, 191, 25));
+        btnRecord = new QPushButton(centralwidget);
+        btnRecord->setObjectName("btnRecord");
+        btnRecord->setGeometry(QRect(1070, 700, 141, 29));
+        btnRecord->setStyleSheet(QString::fromUtf8(""));
+        btnRecord->setCheckable(true);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 1317, 25));
+        menubar->setGeometry(QRect(0, 0, 1317, 21));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName("statusbar");
@@ -664,6 +675,8 @@ public:
         btnUndo->setText(QString());
         btnPlayInput->setText(QString());
         btnPlayOutput->setText(QString());
+        chkRealTime->setText(QCoreApplication::translate("MainWindow", "Mikrofonu Aktif Et (Real-Time)", nullptr));
+        btnRecord->setText(QString());
     } // retranslateUi
 
 };

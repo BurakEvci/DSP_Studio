@@ -16,6 +16,7 @@ SOURCES += \
     noiseprocessor.cpp \
     plotmanager.cpp \
     qcustomplot.cpp \
+    realtimehandler.cpp \
     signalgenerator.cpp \
     statsprocessor.cpp \
     utils.cpp
@@ -27,6 +28,7 @@ HEADERS += \
     noiseprocessor.h \
     plotmanager.h \
     qcustomplot.h \
+    realtimehandler.h \
     signalgenerator.h \
     statsprocessor.h \
     utils.h

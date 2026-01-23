@@ -1135,6 +1135,38 @@ border-radius: 4px;
      <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QCheckBox" name="chkRealTime">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>700</y>
+      <width>191</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Mikrofonu Aktif Et (Real-Time)</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnRecord">
+    <property name="geometry">
+     <rect>
+      <x>1070</x>
+      <y>700</y>
+      <width>141</width>
+      <height>29</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -1142,7 +1174,7 @@ border-radius: 4px;
      <x>0</x>
      <y>0</y>
      <width>1317</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

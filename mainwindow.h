@@ -17,6 +17,7 @@
 #include <QVector>
 #include <QTimer>
 #include "qcustomplot.h"
+#include "realtimehandler.h" // Sınıfımızı ekle
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -77,6 +78,14 @@ private slots:
 
     void on_cmbWindowType_currentIndexChanged(int index);
 
+    void on_chkRealTime_stateChanged(int arg1);
+    void updateLivePlot(const QVector<double> &data);
+
+    void on_btnRecord_clicked(); // Buton tıklama olayı
+
+    void updateAllGraphs();
+    void plotFFT(const QVector<double> &signal, double fs, QCustomPlot *plot);
+
 private:
     Ui::MainWindow *ui;
 
@@ -136,5 +145,10 @@ private:
 
     void updateOutputFFT(); // YENİ: Çıkış FFT grafiğini güncelleyen yardımcı fonksiyon
 
+
+    RealTimeHandler *m_realTimeHandler;
+    QVector<double> m_liveBuffer; // Ekranda göstereceğimiz kayan veri
+
+    bool isRecording = false;
 };
 #endif // MAINWINDOW_H

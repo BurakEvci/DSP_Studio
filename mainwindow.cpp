@@ -9,6 +9,8 @@
 #include <QStyle>
 #include <QTimer>
 #include "qcustomplot.h"
+#include <QDebug>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -93,6 +95,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Varsayılan olarak Moving Avg seçili gibi davranalım
     currentFilterType = FilterType::MOVING_AVERAGE;
+
+    // Sınıfı oluştur
+    m_realTimeHandler = new RealTimeHandler(this);
+
+    // Sinyal-Slot Bağlantısı: Handler'dan veri gelince updateLivePlot çalışsın
+    connect(m_realTimeHandler, &RealTimeHandler::dataReady,
+            this, &MainWindow::updateLivePlot);
+
+    connect(ui->cmbFFTScale, &QComboBox::currentIndexChanged, this, &MainWindow::updateAllGraphs);
 }
 
 MainWindow::~MainWindow()
@@ -144,23 +155,16 @@ void MainWindow::updateFrequencyGraph()
 void MainWindow::applyAndPlotFilter(FilterType type)
 {
     // 1. GÜVENLİK KONTROLLERİ
-    // EĞER GRAFİK YÖNETİCİLERİ OLUŞMADIYSA DUR (Crash önleyici)
     if (!m_filteredTimePlot || !m_filteredFreqPlot) return;
-
-    // Eğer hiç sinyal yoksa işlem yapma
     if (rawSignal.isEmpty()) return;
 
     // 2. UI GÜNCELLEMELERİ
-    // Son kullanılan filtre türünü kaydet (Slider değişirse lazım olabilir)
-    // Son kullanılan filtre türünü kaydet (Slider için lazım)
     currentFilterType = type;
-
-    // Slider Parametresini Al ve LABEL'I GÜNCELLE (Döngüye girmeden!)
     double param = ui->sliderFilterParam->value();
 
     QString paramName = "Değer";
     if (type == FilterType::MOVING_AVERAGE || type == FilterType::MEDIAN) {
-        paramName = "Pencere Boyutu";
+        paramName = "Pencere Boyutu (N)";
     } else if (type == FilterType::LOW_PASS || type == FilterType::HIGH_PASS) {
         paramName = "Kesim Frekansı (Hz)";
     } else if (type == FilterType::BAND_STOP || type == FilterType::BAND_PASS) {
@@ -169,77 +173,50 @@ void MainWindow::applyAndPlotFilter(FilterType type)
     ui->lblSliderValue->setText(QString("%1: %2").arg(paramName).arg(param));
 
 
-    // Girdi Sinyalini Belirle (Gürültülü yoksa Orijinali al)
-    QVector<double> inputSignal;
+    // 3. GİRDİ SİNYALİNİ SEÇ (Input Selection)
+    // Mantık: Elimizde gürültülü/işlenmiş bir sinyal varsa onu filtrele,
+    // yoksa saf sinyali filtrele.
 
-    if (!filteredSignal.isEmpty()) {
-        // Zaten filtrelenmiş veri var, üzerine devam et!
-        inputSignal = filteredSignal;
-    }
-    else if (!noisySignal.isEmpty()) {
-        // Henüz filtre yok ama gürültülü sinyal var, İlk kez filtreliyorsak gürültülü sinyali al
+    QVector<double> inputSignal;
+    if (!noisySignal.isEmpty()) {
         inputSignal = noisySignal;
-    }
-    else {
-        // Gürültü de yok, saf sinyali al
+    } else {
         inputSignal = rawSignal;
     }
 
     if(inputSignal.isEmpty()) return;
 
 
-
-
-    // UNDO (GERİ AL) İÇİN KAYIT
-        // İşlem yapmadan önce elimizdeki sinyali kasaya (yığına) kilitliyoruz.
-        // Hafıza şişmesin diye son 10 işlemi tutuyoruz.
+    // 4. UNDO (GERİ AL) KAYDI
     if (undoStack.size() > 10) {
-        undoStack.removeFirst(); // En eskiyi sil
+        undoStack.removeFirst();
     }
 
-    // Paketi (Struct) Oluştur
     UndoState state;
-    state.signalData = inputSignal;               // Sinyali koy
-    state.sliderValue = ui->sliderFilterParam->value(); // Slider değerini koy    // --------------------------------------------------------
+    state.signalData = inputSignal;         // Şu anki halini sakla
+    state.sliderValue = ui->sliderFilterParam->value();
     state.type = UndoFilter;
-
-    // Paketi rafa kaldır (Push)
     undoStack.push(state);
 
 
-    // 4. FİLTREYİ HESAPLA
-    double fs = ui->txtSampleRate->text().toDouble();
-    // FilterProcessor içindeki genel applyFilter fonksiyonunu kullanıyoruz
-    FilterProcessor::applyFilter(inputSignal, filteredSignal, type, fs, param);
+    // 5. ÖRNEKLEME FREKANSINI HESAPLA (MİKROFON UYUMLU)
+    // Kutudaki yazıya güvenme, gerçek veriye bak!
+    double duration = (!timeVec.isEmpty()) ? timeVec.last() : 0.0;
+    double fs = (duration > 0) ? (rawSignal.size() / duration) : 48000.0;
 
 
-    // 5. FİLTRELİ ZAMAN GRAFİĞİNİ ÇİZ
-    m_filteredTimePlot->updatePlot(timeVec, filteredSignal);
+    // 6. FİLTREYİ HESAPLA
+    // SONUCU 'noisySignal' İÇİNE YAZIYORUZ!
+    // Böylece Play butonu ve Grafikler güncel veriyi görüyor.
+
+    FilterProcessor::applyFilter(inputSignal, noisySignal, type, fs, param);
 
 
-//    // 6. FİLTRELİ FFT HESAPLA VE ÇİZ
-//    QVector<double> freqAxis, magVec;
-//
-//    // WindowType'ı UI'dan al
-//    WindowType wType = static_cast<WindowType>(ui->cmbWindowType->currentIndex());
-//
-//
-//    FFTProcessor::computeFFT(filteredSignal, fs, freqAxis, magVec, wType);
-//
-//    // dB dönüşümü isteniyor mu?
-//    bool isDB = (ui->cmbFFTScale->currentIndex() == 1); // 1: dB, 0: Lineer
-//    FFTProcessor::applyMagnitudeScaling(magVec, isDB);
-//
-//    // Başlığı güncelle
-//    if (isDB)
-//        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik (dB)");
-//    else
-//        m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
-//
-//    m_filteredFreqPlot->updatePlot(freqAxis, magVec);
-//
-    updateStats(filteredSignal);
-    updateOutputFFT();
+    // 7. HER ŞEYİ GÜNCELLE (Sihirli Dokunuş)
+    // Zaman grafiği, FFT grafiği ve İstatistikler tek seferde güncellenir.
+    updateAllGraphs();
+
+    ui->statusbar->showMessage("Filtre uygulandı.");
 }
 
 
@@ -247,7 +224,7 @@ void MainWindow::applyAndPlotFilter(FilterType type)
 void MainWindow::on_btnAddSignal_clicked()
 {
     // 1. UI'dan Verileri Al (Değişmedi)
-    if(ui->txtSampleRate->text().isEmpty() /* ...diğer kontroller... */) return;
+    if(ui->txtSampleRate->text().isEmpty() || ui->txtDuration->text().isEmpty() /* ...diğer kontroller... */) return;
 
     double fs = ui->txtSampleRate->text().toDouble();
     double duration = ui->txtDuration->text().toDouble();
@@ -258,11 +235,18 @@ void MainWindow::on_btnAddSignal_clicked()
     // 2. Sinyali Üret (Değişmedi)
     SignalGenerator::generateSignal(type, fs, duration, freq, amplitude, timeVec, rawSignal);
 
-    // 3. GRAFİĞİ ÇİZDİR (Artık tek satır!)
-    m_origTimePlot->updatePlot(timeVec, rawSignal);
+    // 3. KRİTİK NOKTA: İşlenecek sinyali (noisy) de sıfırla
+    // Yeni bir sinüs ürettik, o yüzden eski gürültülü sinyali unut, temizle başla.
+    noisySignal = rawSignal;
 
-    updateFrequencyGraph();
-    updateStats(rawSignal);
+    // 4. MİKROFON MODUNU KAPAT (Çakışma olmasın)
+    isRecording = false; // Eğer kayıt değişkenin varsa
+    // ui->chkRealTime->setChecked(false); // Eğer checkbox kullanıyorsan
+
+    // 5. HER ŞEYİ ÇİZDİR
+    updateAllGraphs();
+
+    ui->statusbar->showMessage("Sinyal üretildi.", 2000);
 }
 
 
@@ -277,44 +261,45 @@ void MainWindow::on_btnAddNoise_clicked()
         return;
     }
 
-    // UNDO İÇİN KAYIT ---
-    UndoState state;
-    state.signalData = noisySignal; // Şu anki gürültülü (veya boş) hali sakla
-    state.type = UndoNoise;         // "Bu bir gürültü yedeğidir" de
-    undoStack.push(state);
 
     if (undoStack.size() > 10) undoStack.removeFirst(); // Hafıza dolmasın
     // ----------------------------------------------
+
+    // UNDO İÇİN KAYIT ---
+    UndoState state;
+    // Eğer noisySignal boşsa (ilk kez gürültü ekleniyorsa), temiz halini (rawSignal) yedekle
+    // Eğer doluysa (zaten gürültülü veya filtreliyse), o halini yedekle
+    state.signalData = noisySignal.isEmpty() ? rawSignal : noisySignal;
+    state.type = UndoNoise;         // "Bu bir gürültü yedeğidir" de
+    undoStack.push(state);
 
 
     // 3. UI parametrelerini al
     double noiseAmp = ui->dsbNoiseAmplitude->value();
     NoiseType type = static_cast<NoiseType>(ui->cmbNoiseType->currentIndex());
 
+    // GÜRÜLTÜYÜ HESAPLA (Temiz sinyale ekle)
+    // DİKKAT: Her zaman temiz sinyalin (rawSignal) üzerine ekliyoruz ki
+    // gürültüler üst üste binip bozulmasın.
+    // "rawSignal"den al -> "noisySignal"e yaz.
+
     // 4. Gürültü Ekle (Temiz 'rawSignal'i al, 'noisySignal'e yaz)
     NoiseProcessor::addNoise(rawSignal, noisySignal, type, noiseAmp);
 
-    // 4. Grafiği Güncelle
-    // Burada kullanıcı kirli sinyali görsün diye TimePlot'u güncelliyoruz
-    m_origTimePlot->updatePlot(timeVec, noisySignal);
+    // 5. ESKİ FİLTRE SONUÇLARINI TEMİZLE (Opsiyonel ama önerilir)
+    // Yeni gürültü ekleyince eski filtreli verinin anlamı kalmaz.
+    // filteredSignal.clear(); // Eğer bu değişkeni hala kullanıyorsan açabilirsin.
 
-    updateFrequencyGraph();
-    updateStats(noisySignal);
 
-    // --- 7. ÇIKIŞLARI (FİLTRELİ KISMI) TEMİZLE ---
+    // 6. GRAFİKLERİ GÜNCELLE (SİHİRLİ NOKTA)
+    // Bu fonksiyon:
+    // - Üst grafiğe rawSignal (Temiz) çizer.
+    // - Alt grafiğe noisySignal (Gürültülü) çizer.
+    // - Eksenleri ayarlar.
 
-    // HATA ÇÖZÜMÜ: graph(0)->data()->clear() yerine;
-    // updatePlot fonksiyonuna "Boş Vektör" gönderiyoruz. Bu grafiği sıfırlar.
-    QVector<double> emptyVec;
+    updateAllGraphs();
 
-    // Alttaki Zaman Grafiğini Temizle
-    m_filteredTimePlot->updatePlot(emptyVec, emptyVec);
-
-    // Alttaki FFT Grafiğini Temizle
-    m_filteredFreqPlot->updatePlot(emptyVec, emptyVec);
-
-    // Filtrelenmiş sinyal verisini de hafızadan sil
-    filteredSignal.clear();
+    ui->statusbar->showMessage("Gürültü eklendi (Alt grafiğe bakınız).");
 
 }
 
@@ -702,6 +687,12 @@ void MainWindow::playSignal(const QVector<double> &signal, int sampleRate, int t
 
 void MainWindow::on_btnPlayInput_clicked()
 {
+    // 1. GÜVENLİK: Sinyal yoksa işlem yapma
+    if (rawSignal.isEmpty()) {
+        ui->statusbar->showMessage("Çalınacak giriş sinyali yok!", 2000);
+        return;
+    }
+
     // 1. Durum: Zaten bu sinyal (Giriş) hafızadaysa
     if (audioSink && currentAudioType == 1) {
 
@@ -732,26 +723,44 @@ void MainWindow::on_btnPlayInput_clicked()
     }
 
 
-    // Giriş sinyalini çal (noisy varsa onu, yoksa raw'ı)
-    QVector<double> signalToPlay = noisySignal.isEmpty() ? rawSignal : noisySignal;
+    // 3. FREKANS HESABI (Akıllı Yöntem)
+    int fs = 48000;
+    if (!timeVec.isEmpty() && timeVec.last() > 0) {
+        fs = (int)(rawSignal.size() / timeVec.last());
+    } else if (!ui->txtSampleRate->text().isEmpty()) {
+        fs = ui->txtSampleRate->text().toInt();
+        if (fs <= 0) fs = 48000;
+    }
 
+    // Eskiden kutudan alıyorduk (fs değişkeni), şimdi mikrofon hızını zorluyoruz:
     // Sample Rate kutusundan değeri al
-    int fs = ui->txtSampleRate->text().toInt();
+    //int fs = ui->txtSampleRate->text().toInt();
 
-    // Tip olarak '1' (Giriş) gönderiyoruz
-    playSignal(signalToPlay, fs, 1);
+    // Doğrudan 48000 gönderiyoruz:
+    playSignal(rawSignal, 48000, 1);
 
     // Buton yazısını güncelle
     ui->btnPlayInput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-
+    ui->statusbar->showMessage("Giriş (Saf) sinyali çalınıyor...", 2000);
     //playSignal(signalToPlay, fs);
 }
 
 
 void MainWindow::on_btnPlayOutput_clicked()
 {
-    if (filteredSignal.isEmpty()) {
-        ui->statusbar->showMessage("Çalınacak filtrelenmiş sinyal yok!", 2000);
+    // 1. OYNATILACAK SİNYALİ BELİRLE
+    // Biz artık çıkış verisini 'noisySignal' içine kaydediyoruz.
+    // Eğer noisySignal boşsa, belki eski 'filteredSignal' doludur diye ona bak.
+    QVector<double> signalToPlay;
+
+    if (!noisySignal.isEmpty()) {
+        signalToPlay = noisySignal;
+    } else if (!filteredSignal.isEmpty()) {
+        signalToPlay = filteredSignal;
+    }
+
+    if (signalToPlay.isEmpty()) {
+        ui->statusbar->showMessage("Çalınacak filtrelenmiş sinyal yok! Önce bir filtre uygulayın.", 2000);
         return;
     }
 
@@ -760,7 +769,6 @@ void MainWindow::on_btnPlayOutput_clicked()
 
         if (audioSink->state() == QAudio::ActiveState) {
             audioSink->suspend();
-
 
             // İKONU DEĞİŞTİR: "Play" Yap (Çünkü durdu, basınca çalmalı)
             ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -777,14 +785,25 @@ void MainWindow::on_btnPlayOutput_clicked()
         }
     }
 
-    // 2. Durum: Sıfırdan Başlat
-    int fs = ui->txtSampleRate->text().toInt();
+    // 3. FREKANS AYARI (SİNYAL ÜRETECİ Mİ? MİKROFON MU?)
+    int fs = 48000; // Varsayılan (Mikrofon)
+
+    // Eğer zaman vektörümüz varsa en doğrusu oradan hesaplamaktır
+    if (!timeVec.isEmpty() && timeVec.last() > 0) {
+        fs = (int)(rawSignal.size() / timeVec.last());
+    }
+    // Yoksa ve kutu doluysa kutuyu kullan
+    else if (!ui->txtSampleRate->text().isEmpty()) {
+        int val = ui->txtSampleRate->text().toInt();
+        if (val > 0) fs = val;
+    }
 
     // Tip olarak '2' (Çıkış) gönderiyoruz
-    playSignal(filteredSignal, fs, 2);
+    playSignal(signalToPlay, fs, 2);
 
     // Başladığı an butonu "Pause" ikonuna çevir
     ui->btnPlayOutput->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    ui->statusbar->showMessage("Filtrelenmiş sinyal çalınıyor...", 2000);
 }
 
 void MainWindow::on_sliderVolume_valueChanged(int value)
@@ -931,4 +950,316 @@ void MainWindow::on_cmbWindowType_currentIndexChanged(int index)
     // 2. Alttaki (Filtreli) Frekans Grafiğini Güncelle
     updateOutputFFT();
 }
+
+void MainWindow::on_chkRealTime_stateChanged(int arg1)
+{
+    if (arg1 == Qt::Checked) {
+        m_origTimePlot->clearPlot(); // Grafiği temizle
+        m_liveBuffer.clear();        // Tamponu boşalt
+        m_realTimeHandler->startMicrophone(); // Mikrofonu aç
+        ui->statusbar->showMessage("Mikrofon Dinleniyor...");
+    } else {
+        m_realTimeHandler->stopMicrophone(); // Mikrofonu kapat
+        ui->statusbar->showMessage("Canlı mod durduruldu.");
+    }
+}
+
+void MainWindow::updateLivePlot(const QVector<double> &newData)
+{
+    // Sadece kayıt modundaysak çiz
+    if (!isRecording) return;
+
+    // Gelen veriyi ekle
+    m_liveBuffer.append(newData);
+
+    // Son 5 saniyeyi tut (44100 * 5 = 220500 örnek)
+    if (m_liveBuffer.size() > 220500) {
+        m_liveBuffer.remove(0, m_liveBuffer.size() - 220500);
+    }
+
+    // Zaman ekseni oluştur (X ekseni)
+    QVector<double> timeAxis(m_liveBuffer.size());
+    for(int i=0; i < m_liveBuffer.size(); ++i) {
+        timeAxis[i] = i / 48000.0;
+    }
+
+    // Grafiği çizdir
+    m_origTimePlot->updatePlot(timeAxis, m_liveBuffer);
+
+    // Grafiği kaydır (Auto-Scroll)
+    if (!timeAxis.isEmpty()) {
+        m_origTimePlot->getPlot()->xAxis->setRange(timeAxis.last() - 5.0, timeAxis.last());
+        m_origTimePlot->getPlot()->replot();
+    }
+}
+
+/*
+void MainWindow::on_btnRecord_clicked()
+{
+    // Durum kontrolü: Şu an kayıt yapıyor muyuz?
+    if (!isRecording) {
+        // --- KAYDI BAŞLAT ---
+
+        isRecording = true;
+        ui->btnRecord->setText("⏹️ Durdur"); // Buton yazısını değiştir
+        ui->btnRecord->setStyleSheet("; color: white; border: 1px solid red;");
+        ui->statusbar->showMessage("Kayıt yapılıyor... Konuşabilirsiniz.");
+
+        // 1. Önceki verileri temizle
+        m_origTimePlot->clearPlot();
+        m_liveBuffer.clear(); // Canlı tamponu boşalt
+
+        // 2. Diğer girişleri kilitle (Kayıt sırasında oynama yapılmasın)
+        ui->groupBox_2->setEnabled(false);
+        ui->btnPlayInput->setEnabled(false);
+
+        // 3. Mikrofonu Başlat (Handler sınıfını kullanıyoruz)
+        m_realTimeHandler->startMicrophone();
+    }
+    else {
+        // --- KAYDI BİTİR VE İŞLE ---
+
+        isRecording = false;
+        ui->btnRecord->setText("🔴 Kayıt"); // Yazıyı eski haline getir
+
+        ui->btnRecord->setStyleSheet(""); // Rengi sıfırla
+
+        // 1. Mikrofonu Durdur
+        m_realTimeHandler->stopMicrophone();
+
+        // 2. KRİTİK NOKTA: Canlı veriyi ana işlem vektörlerine aktar!
+        if (m_liveBuffer.isEmpty()) {
+            ui->statusbar->showMessage("Ses kaydedilemedi!");
+            return;
+        }
+
+        // Artık 'rawSignal' bizim kaydettiğimiz sestir.
+        rawSignal = m_liveBuffer;
+        noisySignal = m_liveBuffer; // Gürültülü sinyal de başlangıçta aynıdır
+
+        // 3. Zaman vektörünü oluştur (X ekseni için)
+        // time = index / SampleRate
+        timeVec.resize(rawSignal.size());
+        for(int i=0; i < rawSignal.size(); ++i) {
+            timeVec[i] = (double)i / 48000.0;
+        }
+
+        // 4. BÜTÜN GRAFİKLERİ GÜNCELLE
+        // Artık kayıt bittiği için FFT (Frekans) grafiğini de çizdirebiliriz!
+
+        // Zaman Grafiği (Tamamını göster)
+        m_origTimePlot->updatePlot(timeVec, rawSignal);
+        m_origTimePlot->getPlot()->xAxis->setRange(0, timeVec.last()); // Zoom out yap
+        m_origTimePlot->getPlot()->replot();
+
+        // Filtreli Grafik (Başlangıçta orijinalle aynı)
+        m_filteredTimePlot->updatePlot(timeVec, noisySignal);
+
+        // Frekans Analizini Yap (FFT Fonksiyonunu tetikle)
+        // Not: updateFFT fonksiyonun varsa onu çağır. Yoksa buraya FFT kodunu ekleriz.
+        // updateFFTPlots();
+
+        // İstatistikleri Hesapla
+        updateStats(noisySignal);
+
+        // 5. Kilitleri Aç
+        ui->groupBox_2->setEnabled(true);
+        ui->btnPlayInput->setEnabled(true);
+        ui->statusbar->showMessage("Kayıt tamamlandı. İşlem yapabilirsiniz.");
+    }
+} */
+
+void MainWindow::on_btnRecord_clicked()
+{
+    if (!isRecording) {
+        // --- KAYIT BAŞLA ---
+        isRecording = true;
+        ui->btnRecord->setText("⏹️ Durdur");
+        ui->btnRecord->setStyleSheet("background-color: #ff3333; color: white; border: 1px solid red;");
+
+        m_liveBuffer.clear();
+        m_realTimeHandler->startMicrophone();
+
+        // Diğer butonları kilitle
+        ui->btnPlayInput->setEnabled(false);
+        ui->btnPlayOutput->setEnabled(false); // Çıkış oynatmayı da kilitle
+    }
+    else {
+        // --- KAYIT BİTİR ---
+        isRecording = false;
+        ui->btnRecord->setText("🔴 Kayıt");
+        ui->btnRecord->setStyleSheet("");
+        m_realTimeHandler->stopMicrophone();
+
+        if (m_liveBuffer.isEmpty()) return;
+
+        // 1. SADECE RAW SİNYALİ DOLDUR
+        rawSignal = m_liveBuffer;
+
+        // 2. İŞLENMİŞ SİNYALİ TEMİZLE (Çünkü daha filtrelemedik)
+        noisySignal.clear();
+
+        // 3. GRAFİKLERİ GÜNCELLE
+        updateAllGraphs(); // Bu artık sadece üstü çizecek, altı temizleyecek.
+
+        ui->btnPlayInput->setEnabled(true);
+        ui->btnPlayOutput->setEnabled(true);
+        ui->statusbar->showMessage("Kayıt tamamlandı. Filtre uygulamak için butonları kullanın.");
+    }
+}
+
+
+void MainWindow::updateAllGraphs()
+{
+    // Veri yoksa çık
+    if (rawSignal.isEmpty()) return;
+
+    // 1. ZAMAN VEKTÖRÜNÜ GÜNCELLE
+    // Eğer zaman vektörü eksikse veya boyutu tutmuyorsa yeniden oluştur
+    if (timeVec.size() != rawSignal.size()) {
+        timeVec.resize(rawSignal.size());
+        double fs_time = 48000.0;
+        // Eğer zaman vektörü doluysa son süreden hesapla, yoksa 48000 varsay
+        if (!timeVec.isEmpty() && timeVec.last() > 0)
+            fs_time = rawSignal.size() / timeVec.last();
+
+        for(int i=0; i < rawSignal.size(); ++i) timeVec[i] = i / fs_time;
+    }
+
+    // 2. GİRİŞ GRAFİKLERİ (ÜST)
+    m_origTimePlot->updatePlot(timeVec, rawSignal);
+    m_origTimePlot->getPlot()->xAxis->setRange(0, timeVec.last());
+
+    // Frekansı hesapla (Veri / Süre)
+    double fs = (timeVec.last() > 0) ? (rawSignal.size() / timeVec.last()) : 48000.0;
+    plotFFT(rawSignal, fs, m_origFreqPlot->getPlot());
+
+    // 3. ÇIKIŞ GRAFİKLERİ (ALT)
+    // Eğer noisySignal (işlenmiş sinyal) BOŞ ise grafikleri TEMİZLE.
+    if (noisySignal.isEmpty()) {
+        // Filtreli sinyal yoksa grafikleri temizle
+        m_filteredTimePlot->getPlot()->graph(0)->data()->clear();
+        m_filteredTimePlot->getPlot()->replot();
+
+        m_filteredFreqPlot->getPlot()->graph(0)->data()->clear();
+        m_filteredFreqPlot->getPlot()->replot();
+
+        // İstatistikleri sıfırla (Label isimlerini bilmediğimiz için boş vektör gönderiyoruz)
+        QVector<double> empty;
+        updateStats(empty);
+    }
+    else {
+        // Filtreli sinyal varsa çiz
+        m_filteredTimePlot->updatePlot(timeVec, noisySignal);
+        m_filteredTimePlot->getPlot()->xAxis->setRange(0, timeVec.last());
+
+        plotFFT(noisySignal, fs, m_filteredFreqPlot->getPlot());
+
+        // İstatistikleri güncelle
+        updateStats(noisySignal);
+    }
+}
+
+/*
+// Bu fonksiyon: Verilen sinyali alır, senin FFTProcessor sınıfını kullanarak işler ve grafiğe basar.
+void MainWindow::plotFFT(const QVector<double> &signal, double fs, QCustomPlot *plot)
+{
+    if (signal.isEmpty()) return;
+
+    // 1. Çıktı vektörlerini hazırla
+    QVector<double> freqVec;
+    QVector<double> magVec;
+
+    // 2. UI'dan Ayarları Al (Eğer UI elemanların farklı isimdeyse buraları düzelt)
+    // Varsayılan olarak RECTANGULAR (Penceresiz) ve Lineer kabul ediyoruz.
+    // Eğer UI'da bu ayarlar varsa şöyle alabilirsin:
+
+    // WindowType window = static_cast<WindowType>(ui->cmbFFTWindow->currentIndex());
+    WindowType window = WindowType::RECTANGULAR; // Şimdilik varsayılan
+
+    // bool useDB = (ui->cmbFFTScale->currentText() == "dB" veya "Logarithmic");
+    bool useDB = false; // Şimdilik varsayılan (Lineer)
+
+
+    // 3. SENİN SINIFINI ÇAĞIR (computeFFT)
+    // Sınıfın statik olduğu için nesne üretmeden direkt çağırıyoruz.
+    FFTProcessor::computeFFT(signal, fs, freqVec, magVec, window);
+
+    // 4. dB Dönüşümü İsteniyorsa Uygula
+    if (useDB) {
+        FFTProcessor::applyMagnitudeScaling(magVec, true);
+    }
+
+    // 5. Grafiğe Çizdir
+    plot->graph(0)->setData(freqVec, magVec);
+
+    // Eksenleri Otomatik Ayarla
+    plot->xAxis->setRange(0, fs / 2); // Nyquist Frekansına kadar göster
+
+    // Y Eksenini ayarla (dB ise genelde alt sınır -100 vs olur, lineer ise 0)
+    if (useDB)
+        plot->yAxis->setRange(-120, *std::max_element(magVec.begin(), magVec.end()) + 10);
+    else
+        plot->rescaleAxes(); // Lineer ise otomatiğe bırak
+
+    plot->replot();
+} */
+
+
+
+
+void MainWindow::plotFFT(const QVector<double> &signal, double fs, QCustomPlot *plot)
+{
+    // Güvenlik: Sinyal boşsa veya grafik yoksa çık
+    if (signal.isEmpty() || !plot) return;
+
+    QVector<double> freqVec, magVec;
+
+    // 1. UI Ayarlarını Al
+    // (Eğer UI eleman isimlerin farklıysa lütfen buraları düzelt)
+    WindowType window = WindowType::RECTANGULAR;
+    if (ui->cmbFFTScale)
+        window = static_cast<WindowType>(ui->cmbFFTScale->currentIndex());
+
+    // "dB" kelimesi geçiyor mu kontrol et
+    bool useDB = false;
+    if (ui->cmbFFTScale)
+        useDB = ui->cmbFFTScale->currentText().contains("dB", Qt::CaseInsensitive);
+
+    // 2. Hesapla (Senin Sınıfın)
+    FFTProcessor::computeFFT(signal, fs, freqVec, magVec, window);
+
+    // 3. dB Dönüşümü (Güvenli Mod)
+    if (useDB) {
+        for(int i=0; i<magVec.size(); ++i) {
+            double val = magVec[i];
+            if (val < 1e-12) val = 1e-12; // log(0) hatasını önle
+            magVec[i] = 20.0 * std::log10(val);
+        }
+    }
+
+    // 4. Grafiğe Veriyi Koy
+    plot->graph(0)->setData(freqVec, magVec);
+
+    // 5. EKSENLERİ AYARLA (SORUNUN ÇÖZÜMÜ BURASI)
+    plot->xAxis->setRange(0, fs / 2); // Nyquist sınırı
+
+    // Y eksenini veriye göre otomatik ayarla
+    plot->graph(0)->rescaleValueAxis(false, true);
+
+    // Biraz pay bırak (Görüntü sıkışmasın)
+    if (useDB) {
+        // dB modunda tavanı biraz artır
+        double maxVal = -100;
+        if (!magVec.isEmpty()) maxVal = *std::max_element(magVec.begin(), magVec.end());
+        plot->yAxis->setRange(maxVal - 140, maxVal + 10);
+    } else {
+        // Lineer Mod: Otomatik ölçekle ama alt sınırı 0 yap
+        plot->rescaleAxes();
+        plot->yAxis->setRangeLower(0);
+    }
+
+    plot->replot();
+}
+
 

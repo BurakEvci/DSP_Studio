@@ -10,6 +10,7 @@
 #include <QtGui/qtextcursor.h>
 #include <QtGui/qscreen.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/QList>
 
 #include <QtCore/qtmochelpers.h>
 
@@ -60,7 +61,19 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "on_btnPlayOutput_clicked",
         "on_sliderVolume_valueChanged",
         "updatePlayHead",
-        "on_cmbWindowType_currentIndexChanged"
+        "on_cmbWindowType_currentIndexChanged",
+        "on_chkRealTime_stateChanged",
+        "arg1",
+        "updateLivePlot",
+        "QList<double>",
+        "data",
+        "on_btnRecord_clicked",
+        "updateAllGraphs",
+        "plotFFT",
+        "signal",
+        "fs",
+        "QCustomPlot*",
+        "plot"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -106,6 +119,22 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SlotData<void(int)>(20, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { QMetaType::Int, 6 },
         }}),
+        // Slot 'on_chkRealTime_stateChanged'
+        QtMocHelpers::SlotData<void(int)>(21, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 22 },
+        }}),
+        // Slot 'updateLivePlot'
+        QtMocHelpers::SlotData<void(const QVector<double> &)>(23, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 24, 25 },
+        }}),
+        // Slot 'on_btnRecord_clicked'
+        QtMocHelpers::SlotData<void()>(26, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'updateAllGraphs'
+        QtMocHelpers::SlotData<void()>(27, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'plotFFT'
+        QtMocHelpers::SlotData<void(const QVector<double> &, double, QCustomPlot *)>(28, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 24, 29 }, { QMetaType::Double, 30 }, { 0x80000000 | 31, 32 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -146,7 +175,33 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 14: _t->on_sliderVolume_valueChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
         case 15: _t->updatePlayHead(); break;
         case 16: _t->on_cmbWindowType_currentIndexChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 17: _t->on_chkRealTime_stateChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 18: _t->updateLivePlot((*reinterpret_cast< std::add_pointer_t<QList<double>>>(_a[1]))); break;
+        case 19: _t->on_btnRecord_clicked(); break;
+        case 20: _t->updateAllGraphs(); break;
+        case 21: _t->plotFFT((*reinterpret_cast< std::add_pointer_t<QList<double>>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<double>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QCustomPlot*>>(_a[3]))); break;
         default: ;
+        }
+    }
+    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+        case 18:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+            case 0:
+                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QList<double> >(); break;
+            }
+            break;
+        case 21:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+            case 2:
+                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QCustomPlot* >(); break;
+            case 0:
+                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QList<double> >(); break;
+            }
+            break;
         }
     }
 }
@@ -170,14 +225,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 17)
+        if (_id < 22)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 17;
+        _id -= 22;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 17)
-            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 17;
+        if (_id < 22)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 22;
     }
     return _id;
 }
