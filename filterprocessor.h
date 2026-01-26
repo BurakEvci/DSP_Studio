@@ -33,6 +33,9 @@ public:
     static void applyFilter(const QVector<double> &input, QVector<double> &output,
                             FilterType type, double fs, double param);
 
+    static void applyDelay(const QVector<double> &input, QVector<double> &output,
+                           double fs, double delaySeconds, double decay);
+
 private:
     // --- Algoritmalar ---
     static void applyMovingAverage(const QVector<double> &input, QVector<double> &output, int windowSize);

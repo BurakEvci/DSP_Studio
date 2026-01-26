@@ -1263,3 +1263,56 @@ void MainWindow::plotFFT(const QVector<double> &signal, double fs, QCustomPlot *
 }
 
 
+
+void MainWindow::on_chkRealTime_checkStateChanged(const Qt::CheckState &arg1)
+{
+
+}
+
+
+void MainWindow::on_btnReverb_clicked()
+{
+    // 1. Sinyal Kontrolü
+    if (rawSignal.isEmpty()) {
+        ui->statusbar->showMessage("İşlenecek sinyal yok!");
+        return;
+    }
+
+    // 2. Ses Motorunu Durdur (Güvenlik)
+    stopAudio();
+
+    // 3. UNDO (GERİ AL) KAYDI
+    if (undoStack.size() > 10) undoStack.removeFirst();
+    UndoState state;
+    state.signalData = !noisySignal.isEmpty() ? noisySignal : rawSignal;
+    state.type = UndoFilter; // Veya yeni bir UndoType::Effect ekleyebilirsin
+    undoStack.push(state);
+
+
+    // 4. İŞLENECEK SİNYALİ SEÇ
+    // Zincirleme etki: Eğer zaten gürültülü veya filtreli bir ses varsa onun üzerine yankı ekle.
+    QVector<double> inputSignal = !noisySignal.isEmpty() ? noisySignal : rawSignal;
+
+    // 5. PARAMETRELER (İstersen Slider'dan alabilirsin)
+    double delayTime = 0.4; // 0.4 Saniye (Büyük oda etkisi)
+    double decay = 0.5;     // Her yankıda ses %50 azalsın
+
+    // Gerçek Frekansı Bul
+    double fs = 48000.0;
+    if (!timeVec.isEmpty() && timeVec.last() > 0)
+        fs = rawSignal.size() / timeVec.last();
+
+
+    // 6. EFEKTİ UYGULA
+    // Sonucu noisySignal'e yazıyoruz ki Play Output butonu bunu çalsın.
+    FilterProcessor::applyDelay(inputSignal, noisySignal, fs, delayTime, decay);
+
+
+    // 7. GRAFİKLERİ GÜNCELLE updateAllGraphs();
+    updateAllGraphs();
+
+    ui->btnReverb->setText("Reverb (Aktif)");
+
+    ui->statusbar->showMessage("Reverberasyon (Yankı) efekti uygulandı. 🎸");
+}
+

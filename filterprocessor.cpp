@@ -164,7 +164,29 @@ void FilterProcessor::applyBandStop(const QVector<double> &input, QVector<double
     }
 }
 
+void FilterProcessor::applyDelay(const QVector<double> &input, QVector<double> &output,
+                                 double fs, double delaySeconds, double decay)
+{
+    // Çıkış vektörünü hazırla
+    output = input;
 
+    // Gecikme miktarını 'Örnek Sayısı'na (Sample) çevir
+    // Örnek: 0.5 saniye * 48000 Hz = 24000 örnek geriden gelmeli
+    int delaySamples = (int)(delaySeconds * fs);
+
+    // Decay (Sönümleme) güvenliği: 1.0 olursa ses asla susmaz (Feedback Loop)
+    if (decay >= 0.99) decay = 0.99;
+
+    // Döngü
+    for (int i = 0; i < input.size(); ++i) {
+        // Eğer geçmişte bakacak kadar verimiz varsa (Gecikme süresi dolduysa)
+        if (i >= delaySamples) {
+            // Formül: y[n] = x[n] + (y[n - gecikme] * sönümleme)
+            // output[i - delaySamples] kullanarak önceki yankının yankısını da alıyoruz.
+            output[i] = input[i] + (output[i - delaySamples] * decay);
+        }
+    }
+}
 
 
 

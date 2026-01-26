@@ -86,6 +86,10 @@ private slots:
     void updateAllGraphs();
     void plotFFT(const QVector<double> &signal, double fs, QCustomPlot *plot);
 
+    void on_chkRealTime_checkStateChanged(const Qt::CheckState &arg1);
+
+    void on_btnReverb_clicked();
+
 private:
     Ui::MainWindow *ui;
 
