@@ -226,7 +226,10 @@ void MainWindow::applyAndPlotFilter(FilterType type)
         paramName = "Kesim Frekansı (Hz)";
     } else if (type == FilterType::BAND_STOP || type == FilterType::BAND_PASS) {
         paramName = "Merkez Frekans (Hz)";
+    } else if (type == FilterType::KALMAN) {  // <--- BURAYA EKLİYORUZ
+        paramName = "Ölçüm Gürültüsü (R)";
     }
+
     ui->lblSliderValue->setText(QString("%1: %2").arg(paramName).arg(param));
 
 
@@ -440,6 +443,15 @@ void MainWindow::on_btnLowPass_clicked(){
 void MainWindow::on_btnBandStop_clicked()
 {
     applyAndPlotFilter(FilterType::BAND_STOP);
+}
+
+void MainWindow::on_btnKalman_clicked()
+{
+    // Ortak fonksiyonumuzu kullanıyoruz
+    applyAndPlotFilter(FilterType::KALMAN);
+
+    // Kullanıcıya bilgi verelim
+    ui->statusbar->showMessage("Kalman Filtresi Aktif! Slider ile 'R' (Güven) katsayısını ayarlayabilirsiniz.");
 }
 
 
@@ -1372,5 +1384,8 @@ void MainWindow::on_btnReverb_clicked()
 
     ui->statusbar->showMessage("Reverberasyon (Yankı) efekti uygulandı. 🎸");
 }
+
+
+
 
 

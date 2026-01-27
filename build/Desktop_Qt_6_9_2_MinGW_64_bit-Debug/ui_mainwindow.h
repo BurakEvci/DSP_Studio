@@ -51,17 +51,17 @@ public:
     QGroupBox *groupBox_2;
     QGridLayout *gridLayout_4;
     QGridLayout *gridLayout_3;
-    QLabel *lblSampleRate;
-    QLabel *lblDuration;
     QDoubleSpinBox *dsbSignalAmplitude;
     QLabel *lblSignalType;
-    QLabel *lblSignalFreq;
     QLabel *lblSignalType_2;
     QPushButton *btnAddSignal;
-    QComboBox *cmbSignalType;
-    QLineEdit *txtSignalFreq;
-    QLineEdit *txtDuration;
     QLineEdit *txtSampleRate;
+    QLabel *lblSampleRate;
+    QLineEdit *txtDuration;
+    QLabel *lblDuration;
+    QLineEdit *txtSignalFreq;
+    QComboBox *cmbSignalType;
+    QLabel *lblSignalFreq;
     QGroupBox *groupBox_5;
     QGridLayout *gridLayout_11;
     QGridLayout *gridLayout_9;
@@ -91,7 +91,7 @@ public:
     QGridLayout *gridLayout_22;
     QGridLayout *gridLayout_21;
     QGroupBox *groupBox_11;
-    QWidget *widget;
+    QWidget *layoutWidget;
     QGridLayout *gridLayout_18;
     QLabel *lblStatMin_2;
     QLabel *lblStatRMS_2;
@@ -110,7 +110,7 @@ public:
     QGroupBox *groupBox_13;
     QCustomPlot *customPlotFreqFiltered;
     QLabel *label;
-    QWidget *widget1;
+    QWidget *layoutWidget1;
     QGridLayout *gridLayout_23;
     QComboBox *cmbNoiseType;
     QLabel *lblNoiseType;
@@ -120,7 +120,7 @@ public:
     QPushButton *btnReverb;
     QGridLayout *gridLayout_28;
     QPushButton *btnRecord;
-    QWidget *widget2;
+    QWidget *layoutWidget2;
     QGridLayout *gridLayout_10;
     QGridLayout *gridLayout_27;
     QSlider *sliderVolume;
@@ -375,16 +375,6 @@ public:
         gridLayout_4->setObjectName("gridLayout_4");
         gridLayout_3 = new QGridLayout();
         gridLayout_3->setObjectName("gridLayout_3");
-        lblSampleRate = new QLabel(groupBox_2);
-        lblSampleRate->setObjectName("lblSampleRate");
-
-        gridLayout_3->addWidget(lblSampleRate, 0, 0, 1, 1);
-
-        lblDuration = new QLabel(groupBox_2);
-        lblDuration->setObjectName("lblDuration");
-
-        gridLayout_3->addWidget(lblDuration, 1, 0, 1, 1);
-
         dsbSignalAmplitude = new QDoubleSpinBox(groupBox_2);
         dsbSignalAmplitude->setObjectName("dsbSignalAmplitude");
         dsbSignalAmplitude->setValue(1.000000000000000);
@@ -396,11 +386,6 @@ public:
 
         gridLayout_3->addWidget(lblSignalType, 3, 0, 1, 1);
 
-        lblSignalFreq = new QLabel(groupBox_2);
-        lblSignalFreq->setObjectName("lblSignalFreq");
-
-        gridLayout_3->addWidget(lblSignalFreq, 2, 0, 1, 1);
-
         lblSignalType_2 = new QLabel(groupBox_2);
         lblSignalType_2->setObjectName("lblSignalType_2");
 
@@ -411,25 +396,40 @@ public:
 
         gridLayout_3->addWidget(btnAddSignal, 4, 3, 1, 1);
 
+        txtSampleRate = new QLineEdit(groupBox_2);
+        txtSampleRate->setObjectName("txtSampleRate");
+
+        gridLayout_3->addWidget(txtSampleRate, 0, 3, 1, 1);
+
+        lblSampleRate = new QLabel(groupBox_2);
+        lblSampleRate->setObjectName("lblSampleRate");
+
+        gridLayout_3->addWidget(lblSampleRate, 0, 0, 1, 3);
+
+        txtDuration = new QLineEdit(groupBox_2);
+        txtDuration->setObjectName("txtDuration");
+
+        gridLayout_3->addWidget(txtDuration, 1, 3, 1, 1);
+
+        lblDuration = new QLabel(groupBox_2);
+        lblDuration->setObjectName("lblDuration");
+
+        gridLayout_3->addWidget(lblDuration, 1, 0, 1, 2);
+
+        txtSignalFreq = new QLineEdit(groupBox_2);
+        txtSignalFreq->setObjectName("txtSignalFreq");
+
+        gridLayout_3->addWidget(txtSignalFreq, 2, 3, 1, 1);
+
         cmbSignalType = new QComboBox(groupBox_2);
         cmbSignalType->setObjectName("cmbSignalType");
 
         gridLayout_3->addWidget(cmbSignalType, 3, 2, 1, 2);
 
-        txtSignalFreq = new QLineEdit(groupBox_2);
-        txtSignalFreq->setObjectName("txtSignalFreq");
+        lblSignalFreq = new QLabel(groupBox_2);
+        lblSignalFreq->setObjectName("lblSignalFreq");
 
-        gridLayout_3->addWidget(txtSignalFreq, 2, 2, 1, 2);
-
-        txtDuration = new QLineEdit(groupBox_2);
-        txtDuration->setObjectName("txtDuration");
-
-        gridLayout_3->addWidget(txtDuration, 1, 2, 1, 2);
-
-        txtSampleRate = new QLineEdit(groupBox_2);
-        txtSampleRate->setObjectName("txtSampleRate");
-
-        gridLayout_3->addWidget(txtSampleRate, 0, 2, 1, 2);
+        gridLayout_3->addWidget(lblSignalFreq, 2, 0, 1, 2);
 
 
         gridLayout_4->addLayout(gridLayout_3, 0, 0, 1, 1);
@@ -645,51 +645,51 @@ public:
         groupBox_11 = new QGroupBox(gridLayoutWidget_13);
         groupBox_11->setObjectName("groupBox_11");
         groupBox_11->setStyleSheet(QString::fromUtf8(""));
-        widget = new QWidget(groupBox_11);
-        widget->setObjectName("widget");
-        widget->setGeometry(QRect(11, 31, 421, 181));
-        gridLayout_18 = new QGridLayout(widget);
+        layoutWidget = new QWidget(groupBox_11);
+        layoutWidget->setObjectName("layoutWidget");
+        layoutWidget->setGeometry(QRect(11, 31, 421, 181));
+        gridLayout_18 = new QGridLayout(layoutWidget);
         gridLayout_18->setObjectName("gridLayout_18");
         gridLayout_18->setContentsMargins(0, 0, 0, 0);
-        lblStatMin_2 = new QLabel(widget);
+        lblStatMin_2 = new QLabel(layoutWidget);
         lblStatMin_2->setObjectName("lblStatMin_2");
 
         gridLayout_18->addWidget(lblStatMin_2, 1, 0, 1, 1);
 
-        lblStatRMS_2 = new QLabel(widget);
+        lblStatRMS_2 = new QLabel(layoutWidget);
         lblStatRMS_2->setObjectName("lblStatRMS_2");
 
         gridLayout_18->addWidget(lblStatRMS_2, 3, 0, 1, 1);
 
-        lblStatMax_2 = new QLabel(widget);
+        lblStatMax_2 = new QLabel(layoutWidget);
         lblStatMax_2->setObjectName("lblStatMax_2");
 
         gridLayout_18->addWidget(lblStatMax_2, 0, 0, 1, 1);
 
-        lblStatMax = new QLabel(widget);
+        lblStatMax = new QLabel(layoutWidget);
         lblStatMax->setObjectName("lblStatMax");
         lblStatMax->setFrameShape(QFrame::Shape::Box);
 
         gridLayout_18->addWidget(lblStatMax, 0, 2, 1, 1);
 
-        lblStatMean = new QLabel(widget);
+        lblStatMean = new QLabel(layoutWidget);
         lblStatMean->setObjectName("lblStatMean");
         lblStatMean->setFrameShape(QFrame::Shape::Box);
 
         gridLayout_18->addWidget(lblStatMean, 2, 2, 1, 1);
 
-        lblStatMin = new QLabel(widget);
+        lblStatMin = new QLabel(layoutWidget);
         lblStatMin->setObjectName("lblStatMin");
         lblStatMin->setFrameShape(QFrame::Shape::Box);
 
         gridLayout_18->addWidget(lblStatMin, 1, 2, 1, 1);
 
-        lblStatMean_2 = new QLabel(widget);
+        lblStatMean_2 = new QLabel(layoutWidget);
         lblStatMean_2->setObjectName("lblStatMean_2");
 
         gridLayout_18->addWidget(lblStatMean_2, 2, 0, 1, 2);
 
-        lblStatRMS = new QLabel(widget);
+        lblStatRMS = new QLabel(layoutWidget);
         lblStatRMS->setObjectName("lblStatRMS");
         lblStatRMS->setFrameShape(QFrame::Shape::Box);
 
@@ -778,13 +778,13 @@ public:
         label = new QLabel(centralwidget);
         label->setObjectName("label");
         label->setGeometry(QRect(640, 0, 111, 20));
-        widget1 = new QWidget(centralwidget);
-        widget1->setObjectName("widget1");
-        widget1->setGeometry(QRect(30, 580, 331, 152));
-        gridLayout_23 = new QGridLayout(widget1);
+        layoutWidget1 = new QWidget(centralwidget);
+        layoutWidget1->setObjectName("layoutWidget1");
+        layoutWidget1->setGeometry(QRect(30, 580, 331, 152));
+        gridLayout_23 = new QGridLayout(layoutWidget1);
         gridLayout_23->setObjectName("gridLayout_23");
         gridLayout_23->setContentsMargins(0, 0, 0, 0);
-        cmbNoiseType = new QComboBox(widget1);
+        cmbNoiseType = new QComboBox(layoutWidget1);
         cmbNoiseType->setObjectName("cmbNoiseType");
         QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
@@ -794,17 +794,17 @@ public:
 
         gridLayout_23->addWidget(cmbNoiseType, 0, 1, 1, 1);
 
-        lblNoiseType = new QLabel(widget1);
+        lblNoiseType = new QLabel(layoutWidget1);
         lblNoiseType->setObjectName("lblNoiseType");
 
         gridLayout_23->addWidget(lblNoiseType, 0, 0, 1, 1);
 
-        btnAddNoise = new QPushButton(widget1);
+        btnAddNoise = new QPushButton(layoutWidget1);
         btnAddNoise->setObjectName("btnAddNoise");
 
         gridLayout_23->addWidget(btnAddNoise, 2, 0, 1, 1);
 
-        dsbNoiseAmplitude = new QDoubleSpinBox(widget1);
+        dsbNoiseAmplitude = new QDoubleSpinBox(layoutWidget1);
         dsbNoiseAmplitude->setObjectName("dsbNoiseAmplitude");
         sizePolicy1.setHeightForWidth(dsbNoiseAmplitude->sizePolicy().hasHeightForWidth());
         dsbNoiseAmplitude->setSizePolicy(sizePolicy1);
@@ -812,19 +812,19 @@ public:
 
         gridLayout_23->addWidget(dsbNoiseAmplitude, 1, 1, 1, 1);
 
-        lblNoiseAmplitude = new QLabel(widget1);
+        lblNoiseAmplitude = new QLabel(layoutWidget1);
         lblNoiseAmplitude->setObjectName("lblNoiseAmplitude");
 
         gridLayout_23->addWidget(lblNoiseAmplitude, 1, 0, 1, 1);
 
-        btnReverb = new QPushButton(widget1);
+        btnReverb = new QPushButton(layoutWidget1);
         btnReverb->setObjectName("btnReverb");
 
         gridLayout_23->addWidget(btnReverb, 3, 0, 1, 1);
 
         gridLayout_28 = new QGridLayout();
         gridLayout_28->setObjectName("gridLayout_28");
-        btnRecord = new QPushButton(widget1);
+        btnRecord = new QPushButton(layoutWidget1);
         btnRecord->setObjectName("btnRecord");
         btnRecord->setStyleSheet(QString::fromUtf8(""));
         btnRecord->setCheckable(true);
@@ -834,15 +834,15 @@ public:
 
         gridLayout_23->addLayout(gridLayout_28, 3, 1, 1, 1);
 
-        widget2 = new QWidget(centralwidget);
-        widget2->setObjectName("widget2");
-        widget2->setGeometry(QRect(400, 690, 901, 69));
-        gridLayout_10 = new QGridLayout(widget2);
+        layoutWidget2 = new QWidget(centralwidget);
+        layoutWidget2->setObjectName("layoutWidget2");
+        layoutWidget2->setGeometry(QRect(400, 690, 901, 69));
+        gridLayout_10 = new QGridLayout(layoutWidget2);
         gridLayout_10->setObjectName("gridLayout_10");
         gridLayout_10->setContentsMargins(0, 0, 0, 0);
         gridLayout_27 = new QGridLayout();
         gridLayout_27->setObjectName("gridLayout_27");
-        sliderVolume = new QSlider(widget2);
+        sliderVolume = new QSlider(layoutWidget2);
         sliderVolume->setObjectName("sliderVolume");
         sliderVolume->setMaximum(100);
         sliderVolume->setValue(50);
@@ -867,12 +867,12 @@ public:
 
         gridLayout_29 = new QGridLayout();
         gridLayout_29->setObjectName("gridLayout_29");
-        btnSave = new QPushButton(widget2);
+        btnSave = new QPushButton(layoutWidget2);
         btnSave->setObjectName("btnSave");
 
         gridLayout_29->addWidget(btnSave, 0, 1, 1, 1);
 
-        btnLoad = new QPushButton(widget2);
+        btnLoad = new QPushButton(layoutWidget2);
         btnLoad->setObjectName("btnLoad");
 
         gridLayout_29->addWidget(btnLoad, 0, 3, 1, 1);
@@ -881,7 +881,7 @@ public:
 
         gridLayout_29->addItem(horizontalSpacer_4, 0, 0, 1, 1);
 
-        btnClear = new QPushButton(widget2);
+        btnClear = new QPushButton(layoutWidget2);
         btnClear->setObjectName("btnClear");
 
         gridLayout_29->addWidget(btnClear, 0, 2, 1, 1);
@@ -895,7 +895,7 @@ public:
 
         gridLayout_26 = new QGridLayout();
         gridLayout_26->setObjectName("gridLayout_26");
-        btnPlayOutput = new QPushButton(widget2);
+        btnPlayOutput = new QPushButton(layoutWidget2);
         btnPlayOutput->setObjectName("btnPlayOutput");
         QIcon icon1(QIcon::fromTheme(QIcon::ThemeIcon::MediaPlaybackStart));
         btnPlayOutput->setIcon(icon1);
@@ -908,7 +908,7 @@ public:
 
         gridLayout_25 = new QGridLayout();
         gridLayout_25->setObjectName("gridLayout_25");
-        btnPlayInput = new QPushButton(widget2);
+        btnPlayInput = new QPushButton(layoutWidget2);
         btnPlayInput->setObjectName("btnPlayInput");
         btnPlayInput->setIcon(icon1);
 
@@ -950,12 +950,12 @@ public:
         groupBox_3->setTitle(QCoreApplication::translate("MainWindow", "Analiz Ayarlar\304\261", nullptr));
         lblFFTScale->setText(QCoreApplication::translate("MainWindow", "FFT \303\226l\303\247ekleme Se\303\247imi", nullptr));
         groupBox_2->setTitle(QCoreApplication::translate("MainWindow", "Sinyal \303\234reteci Ayarlar\304\261", nullptr));
-        lblSampleRate->setText(QCoreApplication::translate("MainWindow", "\303\226rnekleme Frekan\304\261s\304\261n\304\261 Girin (Hz):", nullptr));
-        lblDuration->setText(QCoreApplication::translate("MainWindow", "S\303\274reyi Girin (s):", nullptr));
         lblSignalType->setText(QCoreApplication::translate("MainWindow", "Sinyal T\303\274r\303\274:", nullptr));
-        lblSignalFreq->setText(QCoreApplication::translate("MainWindow", "Sinyalin Frekans De\304\237erini Girin(Hz):", nullptr));
         lblSignalType_2->setText(QCoreApplication::translate("MainWindow", "Genlik De\304\237eri:", nullptr));
         btnAddSignal->setText(QCoreApplication::translate("MainWindow", "Sinyal Ekle", nullptr));
+        lblSampleRate->setText(QCoreApplication::translate("MainWindow", "\303\226rnekleme Frekan\304\261s\304\261n\304\261 Girin (Hz):", nullptr));
+        lblDuration->setText(QCoreApplication::translate("MainWindow", "S\303\274reyi Girin (s):", nullptr));
+        lblSignalFreq->setText(QCoreApplication::translate("MainWindow", "Sinyal Frekans De\304\237eri(Hz):", nullptr));
         groupBox_5->setTitle(QCoreApplication::translate("MainWindow", "FFT Pencere Se\303\247imi", nullptr));
         lblWindowType->setText(QCoreApplication::translate("MainWindow", "FFT Penceresi Se\303\247imi", nullptr));
         groupBox_8->setTitle(QCoreApplication::translate("MainWindow", "Zaman Domeni (Giri\305\237)", nullptr));

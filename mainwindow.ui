@@ -295,20 +295,6 @@ QGroupBox::title {
          <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0">
-             <widget class="QLabel" name="lblSampleRate">
-              <property name="text">
-               <string>Örnekleme Frekanısını Girin (Hz):</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="lblDuration">
-              <property name="text">
-               <string>Süreyi Girin (s):</string>
-              </property>
-             </widget>
-            </item>
             <item row="4" column="2">
              <widget class="QDoubleSpinBox" name="dsbSignalAmplitude">
               <property name="value">
@@ -320,13 +306,6 @@ QGroupBox::title {
              <widget class="QLabel" name="lblSignalType">
               <property name="text">
                <string>Sinyal Türü:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="lblSignalFreq">
-              <property name="text">
-               <string>Sinyalin Frekans Değerini Girin(Hz):</string>
               </property>
              </widget>
             </item>
@@ -344,17 +323,38 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
+            <item row="0" column="3">
+             <widget class="QLineEdit" name="txtSampleRate"/>
+            </item>
+            <item row="0" column="0" colspan="3">
+             <widget class="QLabel" name="lblSampleRate">
+              <property name="text">
+               <string>Örnekleme Frekanısını Girin (Hz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QLineEdit" name="txtDuration"/>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QLabel" name="lblDuration">
+              <property name="text">
+               <string>Süreyi Girin (s):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QLineEdit" name="txtSignalFreq"/>
+            </item>
             <item row="3" column="2" colspan="2">
              <widget class="QComboBox" name="cmbSignalType"/>
             </item>
-            <item row="2" column="2" colspan="2">
-             <widget class="QLineEdit" name="txtSignalFreq"/>
-            </item>
-            <item row="1" column="2" colspan="2">
-             <widget class="QLineEdit" name="txtDuration"/>
-            </item>
-            <item row="0" column="2" colspan="2">
-             <widget class="QLineEdit" name="txtSampleRate"/>
+            <item row="2" column="0" colspan="2">
+             <widget class="QLabel" name="lblSignalFreq">
+              <property name="text">
+               <string>Sinyal Frekans Değeri(Hz):</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -668,7 +668,7 @@ QGroupBox::title {
          <property name="title">
           <string>Canlı Sinyal İstatistikleri</string>
          </property>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
            <rect>
             <x>11</x>
@@ -907,7 +907,7 @@ border-radius: 4px;
      <string>DSP ANALYZER</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>30</x>
@@ -987,7 +987,7 @@ border-radius: 4px;
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>400</x>

@@ -53,10 +53,33 @@ void FilterProcessor::applyFilter(const QVector<double> &input, QVector<double> 
         applyBandStop(input, output, fs, param);
         break;
 
+    case FilterType::KALMAN: // <--- BU SATIR VAR MI?
+    {
+        // FORMÜL: R = param^3 (Kübik artış)
+        // Slider 5 ise -> R = 125
+        // Slider 10 ise -> R = 1000
+        // Bu sayede az gürültüde hassas, çok gürültüde "duvar gibi" sağlam olur.
+        double val = (param < 1.0) ? 1.0 : param;
+        double R = val * val * val;
+
+        // Süreç Gürültüsü (Q)
+        // Bunu biraz artır ki sinyal değişimlerine (kıvrımlara) daha hızlı tepki versin.
+        double Q = 0.05;
+
+        applyKalman(input, output, R, Q);
+    }
+    break; // <--- BREAK VAR MI? (Yoksa aşağı kayar)
+
     default:
+        qDebug() << "-> DEFAULT Case'ine Düştü!";
         // Tanımsız filtre gelirse aynen geri döndür
         output = input;
         break;
+    }
+
+    // Çıkışta ilk değeri kontrol et
+    if (!output.isEmpty()) {
+        qDebug() << "Giriş[0]:" << input[0] << " Çıkış[0]:" << output[0];
     }
 }
 
@@ -188,7 +211,46 @@ void FilterProcessor::applyDelay(const QVector<double> &input, QVector<double> &
     }
 }
 
+void FilterProcessor::applyKalman(const QVector<double> &input, QVector<double> &output, double R, double Q)
+{
+    if (input.isEmpty()) return;
+    output.resize(input.size());
 
+    // --- KALMAN BAŞLANGIÇ DEĞERLERİ ---
+    // X_est: Tahmin edilen değer (Başlangıçta ilk ölçüme eşit diyelim)
+    double x_est = input[0];
+
+    // P: Tahmin Hatası Kovaryansı (Başlangıçta hatamız 1 olsun)
+    double P = 1.0;
+
+    // K: Kalman Kazancı (Otomatik hesaplanacak)
+    double K = 0.0;
+
+    // --- DÖNGÜ ---
+    for (int i = 0; i < input.size(); ++i) {
+        // 1. Ölçüm (Sensörden gelen veri)
+        double z = input[i];
+
+        // 2. Tahmin (Prediction)
+        // Basit sistemlerde (sabit duran sinyal gibi) tahmin, önceki tahmine eşittir.
+        // P'ye süreç gürültüsünü (Q) ekleriz.
+        double x_pred = x_est;
+        double P_pred = P + Q;
+
+        // 3. Güncelleme (Update / Correction)
+        // Kalman Kazancını Hesapla: Hata payı / (Hata payı + Sensör Gürültüsü)
+        K = P_pred / (P_pred + R);
+
+        // Tahmini güncelle: Eski Tahmin + Kazanç * (Gerçek Ölçüm - Eski Tahmin)
+        x_est = x_pred + K * (z - x_pred);
+
+        // Hata kovaryansını güncelle
+        P = (1.0 - K) * P_pred;
+
+        // 4. Sonucu Kaydet
+        output[i] = x_est;
+    }
+}
 
 
 

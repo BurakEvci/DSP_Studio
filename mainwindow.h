@@ -90,6 +90,8 @@ private slots:
 
     void on_btnReverb_clicked();
 
+    void on_btnKalman_clicked();
+
 private:
     Ui::MainWindow *ui;
 
