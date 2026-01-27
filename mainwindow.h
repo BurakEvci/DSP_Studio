@@ -154,5 +154,6 @@ private:
     QVector<double> m_liveBuffer; // Ekranda göstereceğimiz kayan veri
 
     bool isRecording = false;
+
 };
 #endif // MAINWINDOW_H

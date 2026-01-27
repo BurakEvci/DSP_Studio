@@ -11,7 +11,6 @@
 #include "qcustomplot.h"
 #include <QDebug>
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -21,24 +20,20 @@ MainWindow::MainWindow(QWidget *parent)
     // -------------------------------------------------------------------------
     // ADIM 1: ÖNCE GRAFİK YÖNETİCİLERİNİ OLUŞTUR (ÇOK ÖNEMLİ!)
     // -------------------------------------------------------------------------
-    // Bunları en başta oluşturmalıyız ki, daha sonra "playHeadLine" bunları kullanabilsin.
 
-    // --- MODÜLER BAĞLANTI ---
     // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeOriginal"i teslim ediyoruz.
     m_origTimePlot = new PlotManager(ui->customPlotTimeOriginal);
     m_origTimePlot->setupPlot("Orijinal Sinyal", "Zaman (s)", "Genlik");
-
 
     // PlotManager'ı oluşturup, ona UI'daki "customPlotFreqOriginal"i teslim ediyoruz.
     m_origFreqPlot = new PlotManager(ui->customPlotFreqOriginal);
     m_origFreqPlot->setupPlot("Frekans Spektrumu", "Frekans (Hz)", "Genlik");
 
-
-    // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeOriginal"i teslim ediyoruz.
+    // PlotManager'ı oluşturup, ona UI'daki "customPlotTimeFiltered"i teslim ediyoruz.
     m_filteredTimePlot = new PlotManager(ui->customPlotTimeFiltered);
     m_filteredTimePlot->setupPlot("Filtrelenmiş Sinyal", "Zaman (s)", "Genlik");
 
-    // PlotManager'ı oluşturup, ona UI'daki "customPlotFreqOriginal"i teslim ediyoruz.
+    // PlotManager'ı oluşturup, ona UI'daki "customPlotFreqFiltered"i teslim ediyoruz.
     m_filteredFreqPlot = new PlotManager(ui->customPlotFreqFiltered);
     m_filteredFreqPlot->setupPlot("Filtre Sonrası Spektrum", "Frekans (Hz)", "Genlik");
 
@@ -46,64 +41,126 @@ MainWindow::MainWindow(QWidget *parent)
     // -------------------------------------------------------------------------
     // ADIM 2: KIRMIZI ÇİZGİYİ (PLAYHEAD) OLUŞTUR
     // -------------------------------------------------------------------------
-    // Artık m_origTimePlot oluştuğu için ->getPlot() diyebiliriz. Güvenli.
 
-    // 1. Kırmızı Çizgiyi Oluştur
-    playHeadLine = new QCPItemLine(m_origTimePlot->getPlot()); // Giriş grafiğine ekle
-    playHeadLine->setPen(QPen(Qt::red, 2)); // Kırmızı ve 2px kalınlık
-    // Çizginin boyunu çok uzun yapıyoruz ki sinyal ne kadar büyük olsa da görünsün (-2 ile 2 arası)
-    playHeadLine->start->setCoords(0, -2);  // Başlangıç (Y ekseninin en altı)
-    playHeadLine->end->setCoords(0, 2);     // Bitiş (Y ekseninin en üstü)
-    playHeadLine->setVisible(false);        // Başta gizli olsun
+    // 1. Kırmızı Çizgiyi Oluştur (Giriş Grafiği İçin)
+    playHeadLine = new QCPItemLine(m_origTimePlot->getPlot());
+    playHeadLine->setPen(QPen(Qt::red, 2));
+    playHeadLine->start->setCoords(0, -2);
+    playHeadLine->end->setCoords(0, 2);
+    playHeadLine->setVisible(false);
 
-    // --- ÇIKIŞ ÇİZGİSİ ---
-    // Bunu "m_filteredTimePlot" üzerine ekliyoruz!
+    // 2. Çıkış Çizgisi (Filtreli Grafik İçin)
     playHeadLineOutput = new QCPItemLine(m_filteredTimePlot->getPlot());
-    playHeadLineOutput->setPen(QPen(Qt::red, 2)); // İstersen rengini farklı yapabilirsin (örn: Qt::blue)
+    playHeadLineOutput->setPen(QPen(Qt::red, 2));
     playHeadLineOutput->start->setCoords(0, -2);
     playHeadLineOutput->end->setCoords(0, 2);
     playHeadLineOutput->setVisible(false);
-    // -----------------------------------
 
 
     // -------------------------------------------------------------------------
     // ADIM 3: TIMER (ZAMANLAYICI) KURULUMU
     // -------------------------------------------------------------------------
-    // Timer'ı Hazırla
     playHeadTimer = new QTimer(this);
-    playHeadTimer->setInterval(50); // 50 milisaniyede bir güncelle (Akıcı görüntü için)
+    playHeadTimer->setInterval(50); // 50ms (20 FPS)
     connect(playHeadTimer, &QTimer::timeout, this, &MainWindow::updatePlayHead);
 
 
     // -------------------------------------------------------------------------
-    // ADIM 4: ARAYÜZ ELEMANLARINI DOLDUR (COMBOBOX & SLIDER)
+    // ADIM 4: ARAYÜZ ELEMANLARINI DOLDUR
     // -------------------------------------------------------------------------
 
-    // ComboBox doldurma SignalType
+    // ComboBox Doldurma
     ui->cmbSignalType->addItems({"Sinüs", "Kare", "Üçgen", "Testere Dişi"});
-    // ComboBox doldurma NoiseType
     ui->cmbNoiseType->addItems({"White Noise", "Impulse Noise", "Sinusoidal Noise"});
-    // ComboBox doldurma WindowType
     ui->cmbWindowType->addItems({"Rectangular", "Hann", "Hamming", "Blackman"});
-    // ComboBox doldurma WindowType FFT Ölçeği
     ui->cmbFFTScale->addItems({"Lineer", "dB (Logaritmik)"});
 
     // Slider Başlangıç Ayarları
-    ui->sliderFilterParam->setRange(1, 50); // En az 1, en çok 50
-    ui->sliderFilterParam->setValue(5);     // Başlangıç değeri
+    ui->sliderFilterParam->setRange(1, 50);
+    ui->sliderFilterParam->setValue(5);
     ui->lblSliderValue->setText("Değer: 5");
 
-    // Varsayılan olarak Moving Avg seçili gibi davranalım
+    // Varsayılan Filtre Türü
     currentFilterType = FilterType::MOVING_AVERAGE;
 
-    // Sınıfı oluştur
+    // RealTimeHandler Sınıfını Oluştur
     m_realTimeHandler = new RealTimeHandler(this);
 
-    // Sinyal-Slot Bağlantısı: Handler'dan veri gelince updateLivePlot çalışsın
+    // Bağlantılar
     connect(m_realTimeHandler, &RealTimeHandler::dataReady,
             this, &MainWindow::updateLivePlot);
 
     connect(ui->cmbFFTScale, &QComboBox::currentIndexChanged, this, &MainWindow::updateAllGraphs);
+
+
+    // -------------------------------------------------------------------------
+    // ADIM 5: GÖRSEL MAKYAJ (GRAFİKLERİ GÜVENLİ KARARTMA)
+    // -------------------------------------------------------------------------
+    // Bu kısım constructor'ın en sonunda olmalı ki grafikler oluşmuş olsun.
+
+    // İşlenecek grafiklerin listesini oluştur
+    QList<QCustomPlot*> plots;
+    if(m_origTimePlot && m_origTimePlot->getPlot()) plots << m_origTimePlot->getPlot();
+    if(m_origFreqPlot && m_origFreqPlot->getPlot()) plots << m_origFreqPlot->getPlot();
+    if(m_filteredTimePlot && m_filteredTimePlot->getPlot()) plots << m_filteredTimePlot->getPlot();
+    if(m_filteredFreqPlot && m_filteredFreqPlot->getPlot()) plots << m_filteredFreqPlot->getPlot();
+
+    for(QCustomPlot* plot : plots) {
+        if(!plot) continue; // Ekstra güvenlik
+
+        // 1. Arka Planı Koyu Lacivert Yap (CSS ile uyumlu: #111721)
+        plot->setBackground(QBrush(QColor(17, 23, 33)));
+
+        // 2. Eksen Çizgilerini Beyaz Yap
+        plot->xAxis->setBasePen(QPen(Qt::white));
+        plot->yAxis->setBasePen(QPen(Qt::white));
+        plot->xAxis->setTickPen(QPen(Qt::white));
+        plot->yAxis->setTickPen(QPen(Qt::white));
+        plot->xAxis->setSubTickPen(QPen(Qt::white));
+        plot->yAxis->setSubTickPen(QPen(Qt::white));
+
+        // 3. Yazıları Beyaz Yap
+        plot->xAxis->setTickLabelColor(Qt::white);
+        plot->yAxis->setTickLabelColor(Qt::white);
+        plot->xAxis->setLabelColor(Qt::white);
+        plot->yAxis->setLabelColor(Qt::white);
+
+        // 4. Izgaraları (Grid) Silikleştir
+        plot->xAxis->grid()->setPen(QPen(QColor(60, 70, 80), 1, Qt::SolidLine));
+        plot->yAxis->grid()->setPen(QPen(QColor(60, 70, 80), 1, Qt::SolidLine));
+        plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+        plot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+
+        // 5. Değişiklikleri Uygula
+        plot->replot();
+    }
+
+    // -------------------------------------------------------------------------
+    // ADIM 6: SİNYAL RENKLERİNİ AYARLA (NEON MAVİ & ADAÇAYI YEŞİLİ)
+    // -------------------------------------------------------------------------
+
+    // 1. GİRİŞ GRAFİKLERİ -> NEON CYAN (Mavi)
+    QColor inputColor(0, 210, 255);
+
+    if(m_origTimePlot && m_origTimePlot->getPlot()->graphCount() > 0)
+        m_origTimePlot->getPlot()->graph(0)->setPen(QPen(inputColor, 2));
+
+    if(m_origFreqPlot && m_origFreqPlot->getPlot()->graphCount() > 0)
+        m_origFreqPlot->getPlot()->graph(0)->setPen(QPen(inputColor, 2));
+
+
+    // 2. ÇIKIŞ GRAFİKLERİ -> ADAÇAYI YEŞİLİ (#459363)
+    QColor outputColor("#e31212");
+
+    if(m_filteredTimePlot && m_filteredTimePlot->getPlot()->graphCount() > 0)
+        m_filteredTimePlot->getPlot()->graph(0)->setPen(QPen(outputColor, 2));
+
+    if(m_filteredFreqPlot && m_filteredFreqPlot->getPlot()->graphCount() > 0)
+        m_filteredFreqPlot->getPlot()->graph(0)->setPen(QPen(outputColor, 2));
+
+    // Son kez replot yapıp renkleri oturtalım
+    if(m_origTimePlot) m_origTimePlot->getPlot()->replot();
+    if(m_filteredTimePlot) m_filteredTimePlot->getPlot()->replot();
 }
 
 MainWindow::~MainWindow()
@@ -1315,4 +1372,5 @@ void MainWindow::on_btnReverb_clicked()
 
     ui->statusbar->showMessage("Reverberasyon (Yankı) efekti uygulandı. 🎸");
 }
+
 

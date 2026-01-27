@@ -7,1062 +7,113 @@
     <x>0</x>
     <y>0</y>
     <width>1317</width>
-    <height>874</height>
+    <height>918</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* Global dark canvas for Designer + runtime */
-QWidget {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
+   <string notr="true">/* --- 1. ANA PENCERE (Derin Uzay Mavisi) --- */
+QMainWindow {
+    background-color: #10151e; /* Referans görseldeki koyu ton */
 }
 
-/* Inputs */
-QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-    border: 1px solid #444;
-    padding: 4px;
-    selection-background-color: #3a3a3a;
+/* --- 2. YAZILAR (Okunabilir Parlak Gri) --- */
+QLabel, QCheckBox, QRadioButton {
+    color: #cfd8dc; 
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
 }
 
-/* Buttons */
-QPushButton {
-    background-color: #2d2d2d;
-    border: 1px solid #444;
-    padding: 6px 12px;
-    border-radius: 6px;
-}
-QPushButton:hover { background-color: #353535; }
-QPushButton:pressed { background-color: #2a2a2a; }
-
-/* GroupBox */
+/* --- 3. GRUP KUTULARI (KIRMIZI YOK! Sadece Neon Mavi) --- */
 QGroupBox {
-    border: 1px solid #444;
-    margin-top: 14px;
+    border: 1px solid #2a3b4c; /* Çerçeve: Çok silik mavi-gri */
+    border-radius: 10px;       /* Yumuşak köşeler */
+    margin-top: 22px; 
+    background-color: #161e2b; /* Kutunun içi: Ana fondan bir tık açık */
 }
+
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 6px;
+    left: 15px;
+    padding: 0 5px;
+    color: #00e5ff; /* Başlıklar: NEON CYAN (Referans görseldeki renk) */
+    font-size: 13px;
+    font-weight: bold;
 }
 
-/* Labels */
-QLabel { color: #f0f0f0; }
-</string>
+/* --- 4. BUTONLAR (Referanstaki O Parlak Mavi Geçiş) --- */
+QPushButton {
+    /* Mavi Gradient: Üstten alta koyulaşan profesyonel ton */
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0288d1, stop:1 #01579b);
+    color: white;
+    border: 1px solid #0288d1; /* Kendi renginde çerçeve */
+    border-radius: 6px;        /* Görseldeki gibi hafif yuvarlak */
+    padding: 6px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+QPushButton:hover {
+    /* Üzerine gelince parlasın (Cyan'a kaysın) */
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #29b6f6, stop:1 #0277bd);
+    border: 1px solid #4fc3f7;
+}
+
+QPushButton:pressed {
+    background-color: #01457b; /* Tıklayınca koyulaşsın */
+    padding-top: 8px;
+}
+
+/* --- 5. ÖZEL BUTONLAR --- */
+
+/* &quot;Sinyal Ekle&quot;, &quot;Gürültü Ekle&quot; gibi aksiyon butonları (Turkuaz) */
+/* Eğer ObjectName'leri belliyse buraya ekleyebilirsin, yoksa genel buton stili iş görür */
+
+/* KAYIT BUTONU (Hala Kırmızı Kalsın, Dikkat Çeksin) */
+#btnRecord {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff5252, stop:1 #d32f2f);
+    border: 1px solid #ff1744;
+}
+#btnRecord:hover {
+    background-color: #ff867f;
+}
+
+/* --- 6. GİRDİ KUTULARI (Textbox &amp; Combobox) --- */
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+    background-color: #0d1219; /* Çok koyu zemin */
+    border: 1px solid #37474f;
+    border-radius: 4px;
+    color: #00e5ff; /* İçindeki rakamlar Neon Cyan */
+    padding: 4px;
+}
+
+/* --- 7. SLIDER (Modern Çubuk) --- */
+QSlider::groove:horizontal {
+    border: 1px solid #37474f;
+    height: 6px;
+    background: #0d1219;
+    margin: 2px 0;
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    background: #00e5ff; /* Tutamaç: Neon Cyan */
+    border: 1px solid #00e5ff;
+    width: 14px;
+    height: 14px;
+    margin: -5px 0;
+    border-radius: 7px;
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="lblTitle">
-    <property name="geometry">
-     <rect>
-      <x>630</x>
-      <y>0</y>
-      <width>211</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>20</pointsize>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>DSP Analyzer</string>
-    </property>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>60</y>
-      <width>331</width>
-      <height>631</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="styleSheet">
-        <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-}
-</string>
-       </property>
-       <property name="title">
-        <string>GroupBox</string>
-       </property>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>311</width>
-          <height>201</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Sinyal Üreteci Ayarları</string>
-        </property>
-        <widget class="QLabel" name="lblSampleRate">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>20</y>
-           <width>221</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Örnekleme Frekanısını Girin (Hz):</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="txtSampleRate">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>20</y>
-           <width>71</width>
-           <height>26</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblDuration">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>50</y>
-           <width>221</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Süreyi Girin (s):</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="txtDuration">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>50</y>
-           <width>71</width>
-           <height>26</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblSignalFreq">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>80</y>
-           <width>231</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sinyalin Frekans Değerini Girin(Hz):</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="txtSignalFreq">
-         <property name="geometry">
-          <rect>
-           <x>250</x>
-           <y>80</y>
-           <width>51</width>
-           <height>26</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnAddSignal">
-         <property name="geometry">
-          <rect>
-           <x>200</x>
-           <y>160</y>
-           <width>101</width>
-           <height>29</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sinyal Ekle</string>
-         </property>
-        </widget>
-        <widget class="QComboBox" name="cmbSignalType">
-         <property name="geometry">
-          <rect>
-           <x>200</x>
-           <y>110</y>
-           <width>101</width>
-           <height>28</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="dsbSignalAmplitude">
-         <property name="geometry">
-          <rect>
-           <x>120</x>
-           <y>160</y>
-           <width>63</width>
-           <height>29</height>
-          </rect>
-         </property>
-         <property name="value">
-          <double>1.000000000000000</double>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblSignalType">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>110</y>
-           <width>81</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sinyal Türü:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblSignalType_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>160</y>
-           <width>101</width>
-           <height>31</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Genlik Değeri:</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_3">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>240</y>
-          <width>311</width>
-          <height>81</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Analiz Ayarları</string>
-        </property>
-        <widget class="QLabel" name="lblFFTScale">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>20</y>
-           <width>181</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>FFT Ölçekleme Seçimi</string>
-         </property>
-        </widget>
-        <widget class="QComboBox" name="cmbFFTScale">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>20</y>
-           <width>131</width>
-           <height>26</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>320</y>
-          <width>311</width>
-          <height>108</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Filtre Parametreleri</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QLabel" name="lblCutoffBwSlider">
-           <property name="text">
-            <string>Cutoff / Bandwith Ayar Slider</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="lblSliderValue">
-           <property name="text">
-            <string>Değer: 5</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="sliderFilterParam">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_5">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>440</y>
-          <width>311</width>
-          <height>181</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>FFT Pencere Seçimi</string>
-        </property>
-        <widget class="QLabel" name="lblWindowType">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>30</y>
-           <width>171</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>FFT Penceresi Seçimi</string>
-         </property>
-        </widget>
-        <widget class="QComboBox" name="cmbWindowType">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>30</y>
-           <width>131</width>
-           <height>26</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>360</x>
-      <y>60</y>
-      <width>461</width>
-      <height>631</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <widget class="QGroupBox" name="groupBox_6">
-       <property name="title">
-        <string>GroupBox</string>
-       </property>
-       <widget class="QGroupBox" name="groupBox_7">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>431</width>
-          <height>181</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Filtre Kontrol Paneli</string>
-        </property>
-        <widget class="QPushButton" name="btnLowPass">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>30</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Low-Pass</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnHighPass">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>80</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>High-Pass</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnBandPass">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>130</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Band-Pass</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnMovingAvg">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>130</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Moving Avg </string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnBandStop">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>30</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Band-Stop</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnAllPass">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>80</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>All-Pass</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnWiener">
-         <property name="geometry">
-          <rect>
-           <x>290</x>
-           <y>130</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Wiener</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnKalman">
-         <property name="geometry">
-          <rect>
-           <x>290</x>
-           <y>80</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Kalman</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnMedian">
-         <property name="geometry">
-          <rect>
-           <x>290</x>
-           <y>30</y>
-           <width>111</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Median</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_8">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>200</y>
-          <width>431</width>
-          <height>211</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Zaman Domeni (Giriş)</string>
-        </property>
-        <widget class="QCustomPlot" name="customPlotTimeOriginal" native="true">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>20</y>
-           <width>391</width>
-           <height>181</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border: 2px solid gray;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_9">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>410</y>
-          <width>431</width>
-          <height>211</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Zaman Domeni (Çıkış/Filtreli)</string>
-        </property>
-        <widget class="QCustomPlot" name="customPlotTimeFiltered" native="true">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>20</y>
-           <width>391</width>
-           <height>181</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border: 2px solid gray;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>740</y>
-      <width>1271</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QGroupBox" name="groupBox_14">
-       <property name="title">
-        <string>Gürültü Ayarları</string>
-       </property>
-       <widget class="QPushButton" name="btnAddNoise">
-        <property name="geometry">
-         <rect>
-          <x>640</x>
-          <y>20</y>
-          <width>121</width>
-          <height>29</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Gürültü Ekle</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="btnSave">
-        <property name="geometry">
-         <rect>
-          <x>1110</x>
-          <y>20</y>
-          <width>121</width>
-          <height>29</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Kaydet</string>
-        </property>
-       </widget>
-       <widget class="QComboBox" name="cmbNoiseType">
-        <property name="geometry">
-         <rect>
-          <x>180</x>
-          <y>20</y>
-          <width>131</width>
-          <height>26</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="lblNoiseType">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>20</y>
-          <width>131</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Gürültü Türü Seç:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="lblNoiseAmplitude">
-        <property name="geometry">
-         <rect>
-          <x>350</x>
-          <y>20</y>
-          <width>131</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Gürültü Şiddeti Seç:</string>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="dsbNoiseAmplitude">
-        <property name="geometry">
-         <rect>
-          <x>490</x>
-          <y>20</y>
-          <width>63</width>
-          <height>29</height>
-         </rect>
-        </property>
-        <property name="value">
-         <double>1.000000000000000</double>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="btnClear">
-        <property name="geometry">
-         <rect>
-          <x>970</x>
-          <y>20</y>
-          <width>121</width>
-          <height>29</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Temizle</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="btnLoad">
-        <property name="geometry">
-         <rect>
-          <x>850</x>
-          <y>20</y>
-          <width>90</width>
-          <height>29</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Yükle</string>
-        </property>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget_3">
-    <property name="geometry">
-     <rect>
-      <x>830</x>
-      <y>60</y>
-      <width>461</width>
-      <height>631</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
-      <widget class="QGroupBox" name="groupBox_10">
-       <property name="title">
-        <string>GroupBox</string>
-       </property>
-       <widget class="QGroupBox" name="groupBox_11">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>431</width>
-          <height>181</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Canlı Sinyal İstatistikleri</string>
-        </property>
-        <widget class="QLabel" name="lblStatMax">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>50</y>
-           <width>191</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatMin">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>80</y>
-           <width>221</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatMean">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>110</y>
-           <width>231</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatRMS">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>140</y>
-           <width>231</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatRMS_2">
-         <property name="geometry">
-          <rect>
-           <x>40</x>
-           <y>140</y>
-           <width>81</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>RMS Değeri:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatMax_2">
-         <property name="geometry">
-          <rect>
-           <x>40</x>
-           <y>50</y>
-           <width>81</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Maksimum:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatMin_2">
-         <property name="geometry">
-          <rect>
-           <x>40</x>
-           <y>80</y>
-           <width>61</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Minimum:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="lblStatMean_2">
-         <property name="geometry">
-          <rect>
-           <x>40</x>
-           <y>110</y>
-           <width>91</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Ortalama (DC):</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_12">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>200</y>
-          <width>431</width>
-          <height>211</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Frekans Spektrumu (Giriş)</string>
-        </property>
-        <widget class="QCustomPlot" name="customPlotFreqOriginal" native="true">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>20</y>
-           <width>391</width>
-           <height>181</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border: 2px solid gray;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_13">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>410</y>
-          <width>431</width>
-          <height>211</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QGroupBox {
-    border: 2px solid gray;
-    border-radius: 5px;
-    margin-top: 10px;
-	color:red;
-	border-color:red;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 3px;
-	color:red;
-
-}
-</string>
-        </property>
-        <property name="title">
-         <string>Frekans Spektrumu (Çıkış)</string>
-        </property>
-        <widget class="QCustomPlot" name="customPlotFreqFiltered" native="true">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>20</y>
-           <width>391</width>
-           <height>181</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border: 2px solid gray;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QPushButton" name="btnUndo">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>20</y>
-      <width>31</width>
-      <height>29</height>
+      <x>10</x>
+      <y>0</y>
+      <width>38</width>
+      <height>34</height>
      </rect>
     </property>
     <property name="text">
@@ -1072,100 +123,1048 @@ border-radius: 4px;
      <iconset theme="QIcon::ThemeIcon::EditUndo"/>
     </property>
    </widget>
-   <widget class="QPushButton" name="btnPlayInput">
+   <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>700</y>
-      <width>41</width>
-      <height>31</height>
+      <x>20</x>
+      <y>30</y>
+      <width>348</width>
+      <height>530</height>
      </rect>
     </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
-    </property>
-    <property name="iconSize">
+    <property name="maximumSize">
      <size>
-      <width>24</width>
-      <height>24</height>
+      <width>350</width>
+      <height>16777215</height>
      </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnPlayOutput">
-    <property name="geometry">
-     <rect>
-      <x>850</x>
-      <y>700</y>
-      <width>41</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>24</width>
-      <height>24</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QSlider" name="sliderVolume">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>710</y>
-      <width>160</width>
-      <height>18</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>100</number>
-    </property>
-    <property name="value">
-     <number>50</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Orientation::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnRecord">
-    <property name="geometry">
-     <rect>
-      <x>1090</x>
-      <y>700</y>
-      <width>81</width>
-      <height>31</height>
-     </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true"/>
+     <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+}
+</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout_12">
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="maximumSize">
+          <size>
+           <width>320</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+         </property>
+         <property name="title">
+          <string>Filtre Parametreleri</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="2" column="0">
+             <widget class="QSlider" name="sliderFilterParam">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="lblSliderValue">
+              <property name="text">
+               <string>Değer: 5</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblCutoffBwSlider">
+              <property name="text">
+               <string>Cutoff / Bandwith Ayar Slider</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="maximumSize">
+          <size>
+           <width>320</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+         </property>
+         <property name="title">
+          <string>Analiz Ayarları</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblFFTScale">
+              <property name="text">
+               <string>FFT Ölçekleme Seçimi</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="cmbFFTScale"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="maximumSize">
+          <size>
+           <width>320</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+         </property>
+         <property name="title">
+          <string>Sinyal Üreteci Ayarları</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblSampleRate">
+              <property name="text">
+               <string>Örnekleme Frekanısını Girin (Hz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="lblDuration">
+              <property name="text">
+               <string>Süreyi Girin (s):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QDoubleSpinBox" name="dsbSignalAmplitude">
+              <property name="value">
+               <double>1.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="lblSignalType">
+              <property name="text">
+               <string>Sinyal Türü:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="lblSignalFreq">
+              <property name="text">
+               <string>Sinyalin Frekans Değerini Girin(Hz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="lblSignalType_2">
+              <property name="text">
+               <string>Genlik Değeri:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QPushButton" name="btnAddSignal">
+              <property name="text">
+               <string>Sinyal Ekle</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2" colspan="2">
+             <widget class="QComboBox" name="cmbSignalType"/>
+            </item>
+            <item row="2" column="2" colspan="2">
+             <widget class="QLineEdit" name="txtSignalFreq"/>
+            </item>
+            <item row="1" column="2" colspan="2">
+             <widget class="QLineEdit" name="txtDuration"/>
+            </item>
+            <item row="0" column="2" colspan="2">
+             <widget class="QLineEdit" name="txtSampleRate"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="maximumSize">
+          <size>
+           <width>320</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+         </property>
+         <property name="title">
+          <string>FFT Pencere Seçimi</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_11">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout_9">
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblWindowType">
+              <property name="text">
+               <string>FFT Penceresi Seçimi</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="cmbWindowType"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>30</y>
+      <width>419</width>
+      <height>661</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_Orta">
+     <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout_14">
+       <item row="2" column="0">
+        <layout class="QGridLayout" name="gridLayout_15">
+         <item row="1" column="0">
+          <widget class="QGroupBox" name="groupBox_8">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>220</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+           </property>
+           <property name="title">
+            <string>Zaman Domeni (Giriş)</string>
+           </property>
+           <widget class="QCustomPlot" name="customPlotTimeOriginal" native="true">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>391</width>
+              <height>191</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: 2px solid gray;
+border-radius: 4px;
+</string>
+            </property>
+           </widget>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QGroupBox" name="groupBox_9">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>220</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+           </property>
+           <property name="title">
+            <string>Zaman Domeni (Çıkış/Filtreli)</string>
+           </property>
+           <widget class="QCustomPlot" name="customPlotTimeFiltered" native="true">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>391</width>
+              <height>191</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: 2px solid gray;
+border-radius: 4px;
+</string>
+            </property>
+           </widget>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout_16">
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox_7">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>220</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+             </property>
+             <property name="title">
+              <string>Filtre Kontrol Paneli</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="1" column="2">
+               <widget class="QPushButton" name="btnHighPass">
+                <property name="text">
+                 <string>High-Pass</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btnAllPass">
+                <property name="text">
+                 <string>All-Pass</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QPushButton" name="btnBandPass">
+                <property name="text">
+                 <string>Band-Pass</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QPushButton" name="btnMedian">
+                <property name="text">
+                 <string>Median</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="btnMovingAvg">
+                <property name="text">
+                 <string>Moving Avg </string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="btnKalman">
+                <property name="text">
+                 <string>Kalman</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="btnLowPass">
+                <property name="text">
+                 <string>Low-Pass</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="btnBandStop">
+                <property name="text">
+                 <string>Band-Stop</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="btnWiener">
+                <property name="text">
+                 <string>Wiener</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_13">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>30</y>
+      <width>461</width>
+      <height>661</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_22">
+     <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout_21">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="title">
+          <string>Canlı Sinyal İstatistikleri</string>
+         </property>
+         <widget class="QWidget" name="">
+          <property name="geometry">
+           <rect>
+            <x>11</x>
+            <y>31</y>
+            <width>421</width>
+            <height>181</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_18">
+           <item row="1" column="0">
+            <widget class="QLabel" name="lblStatMin_2">
+             <property name="text">
+              <string>Minimum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="lblStatRMS_2">
+             <property name="text">
+              <string>RMS Değeri:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="lblStatMax_2">
+             <property name="text">
+              <string>Maksimum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="lblStatMax">
+             <property name="frameShape">
+              <enum>QFrame::Shape::Box</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="lblStatMean">
+             <property name="frameShape">
+              <enum>QFrame::Shape::Box</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="lblStatMin">
+             <property name="frameShape">
+              <enum>QFrame::Shape::Box</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QLabel" name="lblStatMean_2">
+             <property name="text">
+              <string>Ortalama (DC):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="lblStatRMS">
+             <property name="frameShape">
+              <enum>QFrame::Shape::Box</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="gridLayoutWidget_11">
+          <property name="geometry">
+           <rect>
+            <x>11</x>
+            <y>220</y>
+            <width>421</width>
+            <height>211</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_20">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_12">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>220</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+             </property>
+             <property name="title">
+              <string>Frekans Spektrumu (Giriş)</string>
+             </property>
+             <widget class="QCustomPlot" name="customPlotFreqOriginal" native="true">
+              <property name="geometry">
+               <rect>
+                <x>7</x>
+                <y>23</y>
+                <width>401</width>
+                <height>181</height>
+               </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">border: 2px solid gray;
+border-radius: 4px;
+</string>
+              </property>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="gridLayoutWidget_10">
+          <property name="geometry">
+           <rect>
+            <x>11</x>
+            <y>440</y>
+            <width>421</width>
+            <height>211</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_19">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_13">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>220</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QGroupBox {
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 10px;
+	color:red;
+	border-color:white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+	color:white;
+
+}
+</string>
+             </property>
+             <property name="title">
+              <string>Frekans Spektrumu (Çıkış)</string>
+             </property>
+             <widget class="QCustomPlot" name="customPlotFreqFiltered" native="true">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>20</y>
+                <width>401</width>
+                <height>181</height>
+               </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">border: 2px solid gray;
+border-radius: 4px;
+</string>
+              </property>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>0</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
     </property>
     <property name="text">
-     <string>Ses Kaydet</string>
-    </property>
-    <property name="checkable">
-     <bool>true</bool>
+     <string>DSP ANALYZER</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btnReverb">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>700</y>
-      <width>101</width>
-      <height>31</height>
+      <y>580</y>
+      <width>331</width>
+      <height>152</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Delay/Reverb</string>
+    <layout class="QGridLayout" name="gridLayout_23">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbNoiseType">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblNoiseType">
+       <property name="text">
+        <string>Gürültü Türü Seç:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="btnAddNoise">
+       <property name="text">
+        <string>Gürültü Ekle</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QDoubleSpinBox" name="dsbNoiseAmplitude">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblNoiseAmplitude">
+       <property name="text">
+        <string>Gürültü Şiddeti Seç:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QPushButton" name="btnReverb">
+       <property name="text">
+        <string>Delay/Reverb</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <layout class="QGridLayout" name="gridLayout_28">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="btnRecord">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="text">
+          <string>Ses Kaydet</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>690</y>
+      <width>901</width>
+      <height>69</height>
+     </rect>
     </property>
+    <layout class="QGridLayout" name="gridLayout_10">
+     <item row="1" column="1">
+      <layout class="QGridLayout" name="gridLayout_27">
+       <item row="0" column="0">
+        <widget class="QSlider" name="sliderVolume">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>50</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="2">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="3">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="7">
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="9">
+      <layout class="QGridLayout" name="gridLayout_29">
+       <item row="0" column="1">
+        <widget class="QPushButton" name="btnSave">
+         <property name="text">
+          <string>Kaydet</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="btnLoad">
+         <property name="text">
+          <string>Yükle</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="btnClear">
+         <property name="text">
+          <string>Temizle</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="8">
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="6">
+      <layout class="QGridLayout" name="gridLayout_26">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="btnPlayOutput">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="0">
+      <layout class="QGridLayout" name="gridLayout_25">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="btnPlayInput">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="4">
+      <spacer name="horizontalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="5">
+      <spacer name="horizontalSpacer_7">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1174,7 +1173,7 @@ border-radius: 4px;
      <x>0</x>
      <y>0</y>
      <width>1317</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
